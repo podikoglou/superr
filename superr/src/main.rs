@@ -1,11 +1,7 @@
-use instruction::Instruction;
-
-pub mod address;
-pub mod instruction;
-pub mod vm;
+use superr_vm::{instruction::Instruction, vm::VM};
 
 fn main() {
-    let mut vm = vm::VM::default();
+    let mut vm = VM::default();
 
     let program = vec![
         Instruction::Load(3),

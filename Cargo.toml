@@ -1,2 +1,2 @@
 [workspace]
-members = ["vm"]
+members = ["superr_vm", "superr_optimizers", "superr"]
