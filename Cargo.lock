@@ -6,12 +6,16 @@ version = 3
 name = "superr"
 version = "0.1.0"
 dependencies = [
+ "superr_optimizers",
  "superr_vm",
 ]
 
 [[package]]
 name = "superr_optimizers"
 version = "0.1.0"
+dependencies = [
+ "superr_vm",
+]
 
 [[package]]
 name = "superr_vm"
