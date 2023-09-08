@@ -1,4 +1,4 @@
-use superr_vm::vm::Program;
+use superr_vm::{instruction::Program, vm::VM};
 
 use crate::optimizer::Optimizer;
 
@@ -7,7 +7,9 @@ pub struct Superoptimizer {}
 
 impl Optimizer for Superoptimizer {
     fn optimize(&self, input: &Program) -> Program {
-        todo!()
+        let vm = VM::default();
+
+        vec![]
     }
 }
 

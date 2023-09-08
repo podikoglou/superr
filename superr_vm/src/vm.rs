@@ -1,8 +1,6 @@
-use crate::instruction::Instruction;
+use crate::instruction::{Instruction, Program};
 
 const MEM_SIZE: usize = 4;
-
-pub type Program = Vec<Instruction>;
 
 #[derive(Debug, Default)]
 pub struct VM {
