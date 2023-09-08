@@ -6,7 +6,7 @@ pub type Program = Vec<Instruction>;
 
 #[derive(Debug)]
 pub enum Instruction {
-    Load(i32),
+    Load(u32),
     Swap(MemoryAddress, MemoryAddress),
     XOR(MemoryAddress, MemoryAddress),
     Inc(MemoryAddress),
@@ -14,7 +14,7 @@ pub enum Instruction {
 
 #[derive(Debug)]
 pub struct VM {
-    pub state: [i32; MEM_SIZE],
+    pub state: [u32; MEM_SIZE],
 }
 
 impl Default for VM {
