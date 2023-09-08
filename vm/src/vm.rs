@@ -1,28 +1,12 @@
-const MEM_SIZE: usize = 4;
+use crate::instruction::Instruction;
 
-pub type MemoryAddress = usize;
+const MEM_SIZE: usize = 4;
 
 pub type Program = Vec<Instruction>;
 
-#[derive(Debug)]
-pub enum Instruction {
-    Load(u32),
-    Swap(MemoryAddress, MemoryAddress),
-    XOR(MemoryAddress, MemoryAddress),
-    Inc(MemoryAddress),
-}
-
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct VM {
     pub state: [u32; MEM_SIZE],
-}
-
-impl Default for VM {
-    fn default() -> Self {
-        VM {
-            state: [0; MEM_SIZE],
-        }
-    }
 }
 
 impl VM {

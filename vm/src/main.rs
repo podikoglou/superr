@@ -1,5 +1,7 @@
-use vm::Instruction;
+use instruction::Instruction;
 
+pub mod address;
+pub mod instruction;
 pub mod vm;
 
 fn main() {
