@@ -15,7 +15,7 @@ fn main() {
         Instruction::Load(3),
     ];
 
-    vm.run_program(program);
+    vm.execute_program(program);
 
     dbg!(vm.state);
 }

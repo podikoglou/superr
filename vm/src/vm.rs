@@ -1,8 +1,7 @@
-use std::usize;
-
 const MEM_SIZE: usize = 4;
 
 pub type MemoryAddress = usize;
+
 pub type Program = Vec<Instruction>;
 
 #[derive(Debug)]
@@ -27,30 +26,29 @@ impl Default for VM {
 }
 
 impl VM {
-    pub fn run_program(&mut self, program: Program) {
+    pub fn execute_program(&mut self, program: Program) {
         for instruction in program {
-            match instruction {
-                Instruction::Load(val) => self.load(val),
-                Instruction::Swap(a, b) => self.swap(a, b),
-                Instruction::XOR(a, b) => self.xor(a, b),
-                Instruction::Inc(addr) => self.incr(addr),
-            }
+            self.execute(instruction);
         }
     }
 
-    pub fn load(&mut self, val: i32) {
-        self.state[0] = val;
-    }
+    pub fn execute(&mut self, instruction: Instruction) {
+        match instruction {
+            Instruction::Load(val) => {
+                self.state[0] = val;
+            }
 
-    pub fn swap(&mut self, a: MemoryAddress, b: MemoryAddress) {
-        self.state.swap(a, b);
-    }
+            Instruction::Swap(a, b) => {
+                self.state.swap(a, b);
+            }
 
-    pub fn xor(&mut self, a: MemoryAddress, b: MemoryAddress) {
-        self.state[a] = self.state[a] ^ self.state[b];
-    }
+            Instruction::XOR(a, b) => {
+                self.state[a] = self.state[a] ^ self.state[b];
+            }
 
-    pub fn incr(&mut self, addr: MemoryAddress) {
-        self.state[addr] += 1;
+            Instruction::Inc(addr) => {
+                self.state[addr] += 1;
+            }
+        }
     }
 }
