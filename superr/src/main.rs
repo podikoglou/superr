@@ -1,19 +1,34 @@
-use superr_vm::{instruction::Instruction, vm::VM};
+use superr_optimizers::{optimizer::Optimizer, superoptimizer::Superoptimizer};
+use superr_vm::{program::Program, vm::VM};
 
 fn main() {
-    let mut vm = VM::default();
+    let original: Program = vec![
+        vec![3, 0],
+        vec![3, 0],
+        vec![3, 0],
+        vec![1, 0, 1],
+        vec![1, 2, 3],
+        vec![3, 0],
+        vec![1, 0, 2],
+        vec![1, 1, 3],
+        vec![2, 0, 1],
+        vec![2, 2, 3],
+    ]
+    .into();
 
-    let program = vec![
-        Instruction::Load(3),
-        Instruction::Swap(0x00, 0x01),
-        Instruction::Load(3),
-        Instruction::Swap(0x00, 0x02),
-        Instruction::Load(3),
-        Instruction::Swap(0x00, 0x03),
-        Instruction::Load(3),
-    ];
+    // run original program
+    let mut vm1 = VM::default();
+    vm1.execute_program(original.clone());
 
-    vm.execute_program(program);
+    dbg!(vm1.state);
 
-    dbg!(vm.state);
+    // optimize program
+    let optimizer = Superoptimizer::new(4); // the optimal program contains 4 instructions
+    let optimized = optimizer.optimize(&original);
+
+    // run optimized program
+    let mut vm2 = VM::default();
+    vm2.execute_program(optimized);
+
+    dbg!(vm2.state);
 }

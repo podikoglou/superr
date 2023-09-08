@@ -1,4 +1,4 @@
-use crate::instruction::{Instruction, Program};
+use crate::{instruction::Instruction, program::Program};
 
 const MEM_SIZE: usize = 4;
 
@@ -13,7 +13,7 @@ impl VM {
     }
 
     pub fn execute_program(&mut self, program: Program) {
-        for instruction in program {
+        for instruction in program.instructions {
             self.execute(instruction);
         }
     }

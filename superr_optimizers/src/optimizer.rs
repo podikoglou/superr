@@ -1,4 +1,4 @@
-use superr_vm::instruction::Program;
+use superr_vm::program::Program;
 
 pub trait Optimizer {
     /// Takes a program and returns a program which is equivalent, but optimized optimally,
