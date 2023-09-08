@@ -21,14 +21,16 @@ fn main() {
     vm1.execute_program(original.clone());
 
     dbg!(vm1.state);
+    dbg!(original.clone());
 
     // optimize program
     let optimizer = Superoptimizer::new(4); // the optimal program contains 4 instructions
-    let optimized = optimizer.optimize(&original);
+    let optimized = optimizer.optimize(original);
 
     // run optimized program
     let mut vm2 = VM::default();
-    vm2.execute_program(optimized);
+    vm2.execute_program(optimized.clone());
 
     dbg!(vm2.state);
+    dbg!(optimized);
 }
