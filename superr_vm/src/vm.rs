@@ -10,6 +10,10 @@ pub struct VM {
 }
 
 impl VM {
+    pub fn reset(&mut self) {
+        self.state = [0; MEM_SIZE];
+    }
+
     pub fn execute_program(&mut self, program: Program) {
         for instruction in program {
             self.execute(instruction);
