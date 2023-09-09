@@ -1,6 +1,6 @@
 use crate::{instruction::Instruction, program::Program};
 
-const MEM_SIZE: usize = 4;
+pub const MEM_SIZE: usize = 6;
 
 #[derive(Debug, Default)]
 pub struct VM {

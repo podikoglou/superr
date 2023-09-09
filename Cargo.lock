@@ -65,6 +65,7 @@ dependencies = [
 name = "superr"
 version = "0.1.0"
 dependencies = [
+ "rand",
  "superr_optimizers",
  "superr_vm",
 ]

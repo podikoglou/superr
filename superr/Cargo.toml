@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 superr_vm = { path = "../superr_vm/" }
 superr_optimizers = { path = "../superr_optimizers/" }
+rand = "0.8.5"
