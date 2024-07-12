@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::{anyhow, Error};
 
 use crate::address::MemoryAddress;
@@ -10,8 +12,10 @@ pub enum Instruction {
     Inc(MemoryAddress),
 }
 
-impl Instruction {
-    pub fn parse(input: &str) -> anyhow::Result<Instruction, Error> {
+impl FromStr for Instruction {
+    type Err = Error;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
         let mut parts = input.trim().split_whitespace();
         let instruction = parts.next().ok_or(anyhow!("invalid instruction"))?;
 
@@ -49,6 +53,17 @@ impl Instruction {
                     .parse::<MemoryAddress>()?,
             )),
             _ => Err(anyhow!("invalid instruction")),
+        }
+    }
+}
+
+impl ToString for Instruction {
+    fn to_string(&self) -> String {
+        match self {
+            Instruction::Load(a) => format!("LOAD {}", a),
+            Instruction::Swap(a, b) => format!("SWAP {} {}", a, b),
+            Instruction::XOR(a, b) => format!("XOR {} {}", a, b),
+            Instruction::Inc(a) => format!("INC {}", a),
         }
     }
 }

@@ -1,4 +1,7 @@
-use std::io::{self, BufRead};
+use std::{
+    io::{self, BufRead},
+    str::FromStr,
+};
 
 use superr_vm::{instruction::Instruction, program::Program};
 
@@ -10,7 +13,9 @@ pub fn execute(_: RunSubcommand) {
 
     for line in lines {
         match line {
-            Ok(v) => program.instructions.push(Instruction::parse(&v).unwrap()),
+            Ok(v) => program
+                .instructions
+                .push(Instruction::from_str(&v).unwrap()),
             Err(_) => break,
         }
     }
