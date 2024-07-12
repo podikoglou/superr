@@ -14,13 +14,15 @@ use crate::optimizer::Optimizer;
 
 pub struct Superoptimizer {
     pub max_instructions: usize,
+    pub max_num: usize,
     pub timeout: Duration,
 }
 
 impl Superoptimizer {
-    pub fn new(max_instructions: usize, timeout: Duration) -> Self {
+    pub fn new(max_instructions: usize, max_num: usize, timeout: Duration) -> Self {
         Self {
             max_instructions,
+            max_num,
             timeout,
         }
     }
@@ -64,7 +66,7 @@ impl Optimizer for Superoptimizer {
                 let reg1 = rng.gen_range(0..vm::MEM_SIZE);
                 let reg2 = rng.gen_range(0..vm::MEM_SIZE);
 
-                let val = rng.gen_range(0..32);
+                let val = rng.gen_range(0..self.max_num);
 
                 let instruction = rng.gen_range(0..=3);
 

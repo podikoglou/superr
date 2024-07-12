@@ -32,7 +32,7 @@ impl From<Vec<Vec<usize>>> for Program {
         let instructions = vec
             .into_iter()
             .map(|item| match item[0] {
-                0 => Instruction::Load(item[1] as u32),
+                0 => Instruction::Load(item[1] as usize),
                 1 => Instruction::Swap(item[1], item[2]),
                 2 => Instruction::XOR(item[1], item[2]),
                 3 => Instruction::Inc(item[1]),

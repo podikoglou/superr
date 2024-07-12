@@ -6,7 +6,7 @@ use crate::address::MemoryAddress;
 
 #[derive(Debug, Clone)]
 pub enum Instruction {
-    Load(u32),
+    Load(usize),
     Swap(MemoryAddress, MemoryAddress),
     XOR(MemoryAddress, MemoryAddress),
     Inc(MemoryAddress),
@@ -24,7 +24,7 @@ impl FromStr for Instruction {
                 parts
                     .next()
                     .ok_or(anyhow!("missing argument for LOAD"))?
-                    .parse::<u32>()?,
+                    .parse::<usize>()?,
             )),
             "SWAP" => Ok(Instruction::Swap(
                 parts

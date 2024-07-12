@@ -30,8 +30,11 @@ pub fn execute(args: OptimizeSubcommand) {
     let target_state = compute_state(&input);
 
     // create and run superoptimizer
-    let superoptimizer =
-        Superoptimizer::new(args.max_instructions, Duration::from_secs(args.timeout));
+    let superoptimizer = Superoptimizer::new(
+        args.max_instructions,
+        args.max_num,
+        Duration::from_secs(args.timeout),
+    );
 
     let output = superoptimizer.optimize(input.clone()); // TODO: ideally don't clone
 
@@ -48,7 +51,7 @@ pub fn execute(args: OptimizeSubcommand) {
     eprintln!("Output Program: {} Instructions", output.instructions.len());
 }
 
-fn compute_state(program: &Program) -> [u32; MEM_SIZE] {
+fn compute_state(program: &Program) -> [usize; MEM_SIZE] {
     let mut vm = VM::default();
 
     vm.execute_program(program);

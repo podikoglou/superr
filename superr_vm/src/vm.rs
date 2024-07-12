@@ -4,7 +4,7 @@ pub const MEM_SIZE: usize = 6;
 
 #[derive(Debug, Default)]
 pub struct VM {
-    pub state: [u32; MEM_SIZE],
+    pub state: [usize; MEM_SIZE],
     pub pc: usize,
 }
 

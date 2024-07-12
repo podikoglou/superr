@@ -45,4 +45,8 @@ pub struct OptimizeSubcommand {
     /// max amount of instructions the output program should have
     #[argh(option)]
     pub max_instructions: usize,
+
+    /// max number that can be loaded
+    #[argh(option)]
+    pub max_num: usize,
 }
