@@ -25,4 +25,8 @@ pub struct RunSubcommand {}
 #[derive(FromArgs, PartialEq, Debug)]
 /// Randomly generates a superr program.
 #[argh(subcommand, name = "gen")]
-pub struct GenSubcommand {}
+pub struct GenSubcommand {
+    /// amount of instructions to generate.
+    #[argh(option, default = "8")]
+    pub instructions: u32,
+}
