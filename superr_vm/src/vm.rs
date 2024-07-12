@@ -5,11 +5,13 @@ pub const MEM_SIZE: usize = 6;
 #[derive(Debug, Default)]
 pub struct VM {
     pub state: [u32; MEM_SIZE],
+    pub pc: usize,
 }
 
 impl VM {
     pub fn reset(&mut self) {
         self.state = [0; MEM_SIZE];
+        self.pc = 0;
     }
 
     pub fn execute_program(&mut self, program: Program) {
@@ -19,6 +21,9 @@ impl VM {
     }
 
     pub fn execute(&mut self, instruction: Instruction) {
+        // should we increase the program counter here or in execute_progam?
+        self.pc += 1;
+
         match instruction {
             Instruction::Load(val) => {
                 self.state[0] = val;
