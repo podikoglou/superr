@@ -1,4 +1,5 @@
 pub mod gen;
+pub mod optimize;
 pub mod run;
 
 use argh::FromArgs;
@@ -15,6 +16,7 @@ pub struct SuperrArgs {
 pub enum Subcommands {
     Run(RunSubcommand),
     Gen(GenSubcommand),
+    Optimize(OptimizeSubcommand),
 }
 
 #[derive(FromArgs, PartialEq, Debug)]
@@ -29,4 +31,14 @@ pub struct GenSubcommand {
     /// amount of instructions to generate.
     #[argh(option, default = "8")]
     pub instructions: u32,
+}
+
+#[derive(FromArgs, PartialEq, Debug)]
+/// Optimizes a program.
+#[argh(subcommand, name = "optimize")]
+pub struct OptimizeSubcommand {
+    /// time to generate for (in seconds). the program will print the best equivalent program
+    /// it found in that given period of time.
+    #[argh(option, default = "10")]
+    pub timeout: u64,
 }

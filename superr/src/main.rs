@@ -8,5 +8,6 @@ fn main() {
     match args.nested {
         cli::Subcommands::Run(subcommand) => cli::run::execute(subcommand),
         cli::Subcommands::Gen(subcommand) => cli::gen::execute(subcommand),
+        cli::Subcommands::Optimize(subcommand) => cli::optimize::execute(subcommand),
     }
 }
