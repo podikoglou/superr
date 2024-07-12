@@ -41,4 +41,8 @@ pub struct OptimizeSubcommand {
     /// it found in that given period of time.
     #[argh(option, default = "10")]
     pub timeout: u64,
+
+    /// max amount of instructions the output program should have
+    #[argh(option)]
+    pub max_instructions: usize,
 }

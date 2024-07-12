@@ -31,7 +31,7 @@ pub fn execute(args: OptimizeSubcommand) {
 
     // create and run superoptimizer
     let superoptimizer =
-        Superoptimizer::new(input.instructions.len(), Duration::from_secs(args.timeout));
+        Superoptimizer::new(args.max_instructions, Duration::from_secs(args.timeout));
 
     let output = superoptimizer.optimize(input.clone()); // TODO: ideally don't clone
 
