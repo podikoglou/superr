@@ -5,6 +5,14 @@ pub struct Program {
     pub instructions: Vec<Instruction>,
 }
 
+impl Program {
+    pub fn new() -> Self {
+        Program {
+            instructions: vec![],
+        }
+    }
+}
+
 impl Into<Vec<Vec<usize>>> for Program {
     fn into(self) -> Vec<Vec<usize>> {
         self.instructions
