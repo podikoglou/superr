@@ -14,15 +14,17 @@ impl VM {
         self.pc = 0;
     }
 
-    pub fn execute_program(&mut self, program: Program) {
-        for instruction in program.instructions {
-            self.execute(instruction);
+    pub fn execute_program(&mut self, program: &Program) {
+        for instruction in &program.instructions {
+            self.execute(&instruction);
         }
     }
 
-    pub fn execute(&mut self, instruction: Instruction) {
+    pub fn execute(&mut self, instruction: &Instruction) {
         // should we increase the program counter here or in execute_progam?
         self.pc += 1;
+
+        let instruction = instruction.clone();
 
         match instruction {
             Instruction::Load(val) => {
