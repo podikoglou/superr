@@ -1,5 +1,5 @@
 use rand::Rng;
-use superr_vm::{instruction::Instruction, program::Program, vm};
+use superr_vm::{instruction::Instruction, vm};
 
 use super::GenSubcommand;
 
