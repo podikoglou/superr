@@ -1,6 +1,9 @@
+use humantime;
 use std::time::{Duration, Instant};
 
-use rand::{thread_rng, Rng};
+use num_format::{Locale, ToFormattedString};
+
+use rand::Rng;
 use superr_vm::{
     instruction::Instruction,
     program::Program,
@@ -25,7 +28,13 @@ impl Superoptimizer {
 
 impl Optimizer for Superoptimizer {
     fn optimize(&self, input: Program) -> Program {
+        // this is a timer for the timeout, we want to stop searching when it's been x
+        // amount of seconds since this instant
         let started = Instant::now();
+
+        // this is a timer for the progress report. we reset it ever 1 second.
+        let mut started_progress = Instant::now();
+        let mut programs_counter = 0;
 
         // create VM for testing
         let mut vm = VM::default();
@@ -35,8 +44,8 @@ impl Optimizer for Superoptimizer {
 
         let target_state = vm.state.clone();
 
-        // move the original program to the `shortest` variable, as it is the shortest version of
-        // the program we have.
+        // move the original program to the `shortest` variable, as it is the
+        // shortest version of the program we have.
         let mut shortest = input;
 
         // start generating absolutely random programs in hopes that one of them is equivalent to
@@ -81,6 +90,13 @@ impl Optimizer for Superoptimizer {
                 // equivalent program we've encountered. if so, set it to the shortest variable.
                 if shortest.instructions.len() > program.instructions.len() {
                     shortest = program.clone();
+
+                    eprintln!(
+                        "Found {}-instruction long equivalent program -- continuing search",
+                        shortest.instructions.len()
+                    );
+                } else {
+                    eprintln!("Found equivalent program but wasn't shorter")
                 }
             }
 
@@ -88,6 +104,24 @@ impl Optimizer for Superoptimizer {
             if started.elapsed() >= self.timeout {
                 return shortest;
             }
+
+            // progress report
+            if started_progress.elapsed() >= Duration::from_secs(1) {
+                started_progress = Instant::now();
+
+                eprintln!(
+                    "[{} / {} ]: {} programs tested",
+                    humantime::format_duration(normalize_duration(started.elapsed())),
+                    humantime::format_duration(normalize_duration(self.timeout)),
+                    programs_counter.to_formatted_string(&Locale::en)
+                );
+            }
+
+            programs_counter += 1;
         }
     }
+}
+
+fn normalize_duration(duration: Duration) -> Duration {
+    Duration::from_secs(duration.as_secs())
 }
