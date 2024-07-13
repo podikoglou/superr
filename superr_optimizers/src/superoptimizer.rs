@@ -38,13 +38,8 @@ impl Optimizer for Superoptimizer {
         let mut started_progress = Instant::now();
         let mut programs_counter = 0;
 
-        // create VM for testing
-        let mut vm = VM::default();
-
-        // execute original program to determine target state
-        vm.execute_program(&input);
-
-        let target_state = vm.state.clone();
+        // compute the target state
+        let target_state = VM::compute_state(&input);
 
         // move the original program to the `shortest` variable, as it is the
         // shortest version of the program we have.
@@ -53,41 +48,14 @@ impl Optimizer for Superoptimizer {
         // start generating absolutely random programs in hopes that one of them is equivalent to
         // the original one.
         loop {
-            let mut program = Program::new();
+            let program = self.generate_program();
 
-            let mut rng = rand::thread_rng();
-
-            // generate a random amount of instructions for the program to have. this amount is
-            // within 0 and the given max_instructions.
-            let instructions_amount = rng.gen_range(0..=self.max_instructions);
-
-            // generate the instructions of the program
-            for _ in 0..instructions_amount {
-                let reg1 = rng.gen_range(0..vm::MEM_SIZE);
-                let reg2 = rng.gen_range(0..vm::MEM_SIZE);
-
-                let val = rng.gen_range(0..self.max_num);
-
-                let instruction = rng.gen_range(0..=3);
-
-                let instruction = match instruction {
-                    0 => Instruction::Load(val),
-                    1 => Instruction::Swap(reg1, reg2),
-                    2 => Instruction::XOR(reg1, reg2),
-                    3 => Instruction::Inc(reg1),
-                    _ => panic!("SUPER unexpected error occurred"),
-                };
-                program.instructions.push(instruction);
-            }
-
-            // reset the memory from the previous iteration and execute the program to see if the
-            // state matches.
-            vm.reset();
-            vm.execute_program(&program);
+            // compute the state of the program
+            let state = VM::compute_state(&program);
 
             // check if this program is equivalent to the given one by checking if the states they
             // produce are equal.
-            if vm.state == target_state {
+            if state == target_state {
                 // if the state is equivalent to the target state, check if this is the shortest
                 // equivalent program we've encountered. if so, set it to the shortest variable.
                 if shortest.instructions.len() > program.instructions.len() {
@@ -121,6 +89,39 @@ impl Optimizer for Superoptimizer {
 
             programs_counter += 1;
         }
+    }
+}
+
+impl Superoptimizer {
+    fn generate_program(&self) -> Program {
+        let mut program = Program::new();
+
+        let mut rng = rand::thread_rng();
+
+        // generate a random amount of instructions for the program to have. this amount is
+        // within 0 and the given max_instructions.
+        let instructions_amount = rng.gen_range(0..=self.max_instructions);
+
+        // generate the instructions of the program
+        for _ in 0..instructions_amount {
+            let reg1 = rng.gen_range(0..vm::MEM_SIZE);
+            let reg2 = rng.gen_range(0..vm::MEM_SIZE);
+
+            let val = rng.gen_range(0..self.max_num);
+
+            let instruction = rng.gen_range(0..=3);
+
+            let instruction = match instruction {
+                0 => Instruction::Load(val),
+                1 => Instruction::Swap(reg1, reg2),
+                2 => Instruction::XOR(reg1, reg2),
+                3 => Instruction::Inc(reg1),
+                _ => panic!("SUPER unexpected error occurred"),
+            };
+            program.instructions.push(instruction);
+        }
+
+        program
     }
 }
 

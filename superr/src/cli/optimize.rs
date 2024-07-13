@@ -26,8 +26,11 @@ pub fn execute(args: OptimizeSubcommand) {
     }
 
     // run the program just to find out what the target state is. we don't need this
-    // immidiately, we only really use it for the output at the end.
-    let target_state = compute_state(&input);
+    // immediately, we only really use it for the output at the end. in fact,
+    // this is computed twice, once hre and once inside the optimize method.
+    let target_state = VM::compute_state(&input);
+
+    dbg!(target_state);
 
     // create and run superoptimizer
     let superoptimizer = Superoptimizer::new(
@@ -46,15 +49,6 @@ pub fn execute(args: OptimizeSubcommand) {
 
     // these are printed to stderr so it doesn't get in the way of the user if
     //  they're piping the output of this program
-    dbg!(target_state);
     eprintln!("Input Program: {} Instructions", input.instructions.len());
     eprintln!("Output Program: {} Instructions", output.instructions.len());
-}
-
-fn compute_state(program: &Program) -> [usize; MEM_SIZE] {
-    let mut vm = VM::default();
-
-    vm.execute_program(program);
-
-    return vm.state;
 }

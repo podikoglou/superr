@@ -2,9 +2,11 @@ use crate::{instruction::Instruction, program::Program};
 
 pub const MEM_SIZE: usize = 6;
 
+pub type State = [usize; MEM_SIZE];
+
 #[derive(Debug, Default)]
 pub struct VM {
-    pub state: [usize; MEM_SIZE],
+    pub state: State,
     pub pc: usize,
 }
 
@@ -21,7 +23,6 @@ impl VM {
     }
 
     pub fn execute(&mut self, instruction: &Instruction) {
-        // should we increase the program counter here or in execute_progam?
         self.pc += 1;
 
         let instruction = instruction.clone();
@@ -43,5 +44,13 @@ impl VM {
                 self.state[addr] += 1;
             }
         }
+    }
+
+    pub fn compute_state(program: &Program) -> State {
+        let mut vm = VM::default();
+
+        vm.execute_program(program);
+
+        return vm.state;
     }
 }
