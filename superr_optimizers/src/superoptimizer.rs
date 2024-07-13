@@ -167,10 +167,11 @@ impl Superoptimizer {
 
                 let len = program.instructions.len();
 
-                if len < shortest_len() {
-                    // the program is shorter than the `shortest`! now we
-                    // just need to update the shortest variable!
-                    // (kinda hacky)
+                if len < shortest_len() && len < self.options.max_instructions {
+                    // the program is shorter than the `shortest`! (and also,
+                    // shortest than max_instructions) now we just need to
+                    // update the shortest variable! (kinda hacky)
+
                     eprintln!(
                         "Found shorter program ({} less instructions)",
                         shortest_len() - len
