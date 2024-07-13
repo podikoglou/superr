@@ -1,4 +1,5 @@
-use humantime;
+use humantime::{self, format_duration};
+use indicatif::{ProgressBar, ProgressStyle};
 use num_format::{Locale, ToFormattedString};
 use std::{
     mem,
@@ -95,20 +96,44 @@ impl Superoptimizer {
         let counter = self.counter.clone();
         let started = self.started.unwrap().clone();
 
+        let progress_frequency = Duration::from_millis(self.options.progress_frequency);
+
+        // create progress bar
+        let bar = ProgressBar::new_spinner();
+
+        bar.set_style(
+            ProgressStyle::default_spinner()
+                .template("{spinner:.green} [{elapsed_precise}] {msg}")
+                .unwrap()
+                .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ "),
+        );
+
+        let mut last_count = 0;
+
         loop {
             if self.should_stop() {
                 break;
             }
 
-            thread::sleep(Duration::from_millis(self.options.progress_frequency));
+            thread::sleep(progress_frequency);
 
             let current = counter.load(Ordering::Relaxed);
+            let elapsed = started.elapsed();
 
-            eprintln!(
-                "[{}]: {} programs tested",
-                humantime::format_duration(normalize_duration(started.elapsed())),
-                current.to_formatted_string(&Locale::en)
+            let programs_per_second =
+                ((current - last_count) as f64 / progress_frequency.as_secs_f64()) as u64;
+
+            let message = format!(
+                "{} Programs tested | {}/s | {}",
+                current.to_formatted_string(&Locale::en),
+                programs_per_second.to_formatted_string(&Locale::en),
+                format_duration(normalize_duration(elapsed))
             );
+
+            bar.set_message(message);
+            bar.tick();
+
+            last_count = current;
         }
     }
 
