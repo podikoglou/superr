@@ -77,12 +77,13 @@ impl Optimizer for Superoptimizer {
         // are finished.
         eprintln!("Stopping");
 
-        // try to unwrap shortest out of arc and consume rwlock
-        match Arc::try_unwrap(self.shortest.clone()) {
+        match Arc::try_unwrap(mem::take(&mut self.shortest)) {
             Ok(shortest) => shortest.into_inner().unwrap(),
-
-            // this will never happen
-            Err(_) => self.input.clone(),
+            Err(arc) => {
+                // this should'nt happen, but if it does, we can still
+                // read the value, just by cloning
+                arc.read().unwrap().clone()
+            }
         }
     }
 }
@@ -175,9 +176,11 @@ impl Superoptimizer {
                         shortest_len() - len
                     );
 
-                    let mut lock = shortest.write().unwrap();
+                    {
+                        let mut lock = shortest.write().unwrap();
 
-                    let _ = mem::replace(&mut *lock, program);
+                        let _ = mem::replace(&mut *lock, program);
+                    }
                 }
             }
 

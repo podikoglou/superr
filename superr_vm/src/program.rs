@@ -1,6 +1,6 @@
 use crate::instruction::Instruction;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Program {
     pub instructions: Vec<Instruction>,
 }
