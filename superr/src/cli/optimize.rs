@@ -4,12 +4,11 @@ use std::{
     time::Duration,
 };
 
-use superr_optimizers::{optimizer::Optimizer, superoptimizer::Superoptimizer};
-use superr_vm::{
-    instruction::Instruction,
-    program::Program,
-    vm::{MEM_SIZE, VM},
+use superr_optimizers::{
+    optimizer::Optimizer,
+    superoptimizer::{Superoptimizer, SuperoptimizerOptions},
 };
+use superr_vm::{instruction::Instruction, program::Program, vm::VM};
 
 use super::OptimizeSubcommand;
 
@@ -33,13 +32,17 @@ pub fn execute(args: OptimizeSubcommand) {
     dbg!(target_state);
 
     // create and run superoptimizer
-    let superoptimizer = Superoptimizer::new(
-        args.max_instructions,
-        args.max_num,
-        Duration::from_secs(args.timeout),
+    let mut superoptimizer = Superoptimizer::new(
+        input.clone(), // TODO: ideally don't clone
+        SuperoptimizerOptions {
+            max_instructions: args.max_instructions,
+            max_num: args.max_num,
+            timeout: Duration::from_secs(args.timeout),
+            progress_frequency: args.progress_frequency,
+        },
     );
 
-    let output = superoptimizer.optimize(input.clone()); // TODO: ideally don't clone
+    let output = superoptimizer.optimize();
 
     // print out instructions for program
     // TODO: ideally don't clone

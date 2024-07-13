@@ -49,4 +49,8 @@ pub struct OptimizeSubcommand {
     /// max number that can be loaded
     #[argh(option)]
     pub max_num: usize,
+
+    /// frequency of progress reports (in milliseconds)
+    #[argh(option, default = "250")]
+    pub progress_frequency: u64,
 }

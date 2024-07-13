@@ -1,98 +1,166 @@
 use humantime;
-use std::time::{Duration, Instant};
-
 use num_format::{Locale, ToFormattedString};
+use std::{
+    mem,
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        Arc, RwLock,
+    },
+    thread,
+    time::{Duration, Instant},
+};
 
 use rand::Rng;
 use superr_vm::{
     instruction::Instruction,
     program::Program,
-    vm::{self, VM},
+    vm::{self, State, VM},
 };
 
 use crate::optimizer::Optimizer;
 
-pub struct Superoptimizer {
+pub struct SuperoptimizerOptions {
     pub max_instructions: usize,
     pub max_num: usize,
     pub timeout: Duration,
+    pub progress_frequency: u64,
+}
+
+pub struct Superoptimizer {
+    pub input: Program,
+
+    pub options: SuperoptimizerOptions,
+
+    pub target_state: Option<State>,
+
+    // state shared between threads
+    pub started: Option<Instant>,
+    pub counter: Arc<AtomicU64>,
+    pub shortest: Arc<RwLock<Program>>,
 }
 
 impl Superoptimizer {
-    pub fn new(max_instructions: usize, max_num: usize, timeout: Duration) -> Self {
+    pub fn new(input: Program, options: SuperoptimizerOptions) -> Self {
         Self {
-            max_instructions,
-            max_num,
-            timeout,
+            input: input.clone(),
+
+            options,
+
+            started: None,
+            target_state: Some(VM::compute_state(&input)),
+            counter: Arc::new(AtomicU64::new(0)),
+            shortest: Arc::new(RwLock::new(input)),
         }
     }
 }
 
 impl Optimizer for Superoptimizer {
-    fn optimize(&self, input: Program) -> Program {
+    fn optimize(&mut self) -> Program {
         // this is a timer for the timeout, we want to stop searching when it's been x
         // amount of seconds since this instant
-        let started = Instant::now();
+        self.started = Some(Instant::now());
 
-        // this is a timer for the progress report. we reset it ever 1 second.
-        let mut started_progress = Instant::now();
-        let mut programs_counter = 0;
+        rayon::scope(|scope| {
+            // run the progress-reporting thread
+            scope.spawn(|_| self.run_progress_loop());
 
-        // compute the target state
-        let target_state = VM::compute_state(&input);
+            // run the worker threads for computing the shortest possible program
+            for i in 0..rayon::current_num_threads() {
+                eprintln!("Starting thread #{}", i);
 
-        // move the original program to the `shortest` variable, as it is the
-        // shortest version of the program we have.
-        let mut shortest = input;
-
-        // start generating absolutely random programs in hopes that one of them is equivalent to
-        // the original one.
-        loop {
-            let program = self.generate_program();
-
-            // compute the state of the program
-            let state = VM::compute_state(&program);
-
-            // check if this program is equivalent to the given one by checking if the states they
-            // produce are equal.
-            if state == target_state {
-                // if the state is equivalent to the target state, check if this is the shortest
-                // equivalent program we've encountered. if so, set it to the shortest variable.
-                if shortest.instructions.len() > program.instructions.len() {
-                    shortest = program.clone();
-
-                    eprintln!(
-                        "Found {}-instruction long equivalent program -- continuing search",
-                        shortest.instructions.len()
-                    );
-                } else {
-                    eprintln!("Found equivalent program but wasn't shorter")
-                }
+                scope.spawn(|_| self.run_computation_loop())
             }
+        });
 
-            // if we're out of time, return the shortest program we've found
-            if started.elapsed() >= self.timeout {
-                return shortest;
-            }
+        // scope basically joins all the threads, so it blocks until all of them
+        // are finished.
+        eprintln!("Stopping");
 
-            // progress report
-            if started_progress.elapsed() >= Duration::from_secs(1) {
-                started_progress = Instant::now();
+        // try to unwrap shortest out of arc and consume rwlock
+        match Arc::try_unwrap(self.shortest.clone()) {
+            Ok(shortest) => shortest.into_inner().unwrap(),
 
-                eprintln!(
-                    "[{} / {} ]: {} programs tested",
-                    humantime::format_duration(normalize_duration(started.elapsed())),
-                    humantime::format_duration(normalize_duration(self.timeout)),
-                    programs_counter.to_formatted_string(&Locale::en)
-                );
-            }
-
-            programs_counter += 1;
+            // this will never happen
+            Err(_) => self.input.clone(),
         }
     }
 }
 
 impl Superoptimizer {
+    fn should_stop(&self) -> bool {
+        self.started.unwrap().elapsed() >= self.options.timeout
+    }
+
+    fn run_progress_loop(&self) {
+        let counter = self.counter.clone();
+        let started = self.started.unwrap().clone();
+
+        loop {
+            if self.should_stop() {
+                break;
+            }
+
+            thread::sleep(Duration::from_millis(self.options.progress_frequency));
+
+            let current = counter.load(Ordering::Relaxed);
+
+            eprintln!(
+                "[{}]: {} programs tested",
+                humantime::format_duration(normalize_duration(started.elapsed())),
+                current.to_formatted_string(&Locale::en)
+            );
+        }
+    }
+
+    fn run_computation_loop(&self) {
+        let counter = self.counter.clone();
+        let shortest = self.shortest.clone();
+
+        // gets the length of the shortest program. this is a function because
+        // the shortest program can be updated at any time, therefore we need
+        // to compute it dynamically.
+        let shortest_len = || shortest.read().unwrap().instructions.len();
+
+        // im not actually sure if there's a big overhead when unwrapping `Option`s,
+        // but it doesn't hurt to just unwrap it once here
+        let target_state = self.target_state.unwrap();
+
+        loop {
+            if self.should_stop() {
+                break;
+            }
+
+            // generate a random program, and execute it in a temporary VM
+            // to get the end state
+            let program = self.generate_program();
+            let state = VM::compute_state(&program);
+
+            if state == target_state {
+                // we've found an equivalent program!
+                // now let's see if it's more efficient or not
+
+                let len = program.instructions.len();
+
+                if len < shortest_len() {
+                    // the program is shorter than the `shortest`! now we
+                    // just need to update the shortest variable!
+                    // (kinda hacky)
+                    eprintln!(
+                        "Found shorter program ({} less instructions)",
+                        shortest_len() - len
+                    );
+
+                    let mut lock = shortest.write().unwrap();
+
+                    let _ = mem::replace(&mut *lock, program);
+                }
+            }
+
+            // increase the counter
+            counter.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+
     fn generate_program(&self) -> Program {
         let mut program = Program::new();
 
@@ -100,14 +168,14 @@ impl Superoptimizer {
 
         // generate a random amount of instructions for the program to have. this amount is
         // within 0 and the given max_instructions.
-        let instructions_amount = rng.gen_range(0..=self.max_instructions);
+        let instructions_amount = rng.gen_range(0..=self.options.max_instructions);
 
         // generate the instructions of the program
         for _ in 0..instructions_amount {
             let reg1 = rng.gen_range(0..vm::MEM_SIZE);
             let reg2 = rng.gen_range(0..vm::MEM_SIZE);
 
-            let val = rng.gen_range(0..self.max_num);
+            let val = rng.gen_range(0..self.options.max_num);
 
             let instruction = rng.gen_range(0..=3);
 
