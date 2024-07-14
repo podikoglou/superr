@@ -2,7 +2,7 @@ pub mod gen;
 pub mod optimize;
 pub mod run;
 
-use argh::FromArgs;
+use argh::{FromArgValue, FromArgs};
 
 #[derive(FromArgs, PartialEq, Debug)]
 /// An experimental VM and superoptimizer.
@@ -53,4 +53,22 @@ pub struct OptimizeSubcommand {
     /// frequency of progress reports (in milliseconds)
     #[argh(option, default = "250")]
     pub progress_frequency: u64,
+
+    /// optimizer to use (options: random)
+    #[argh(option)]
+    pub optimizer: OptimizerType,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum OptimizerType {
+    RandomSearch,
+}
+
+impl FromArgValue for OptimizerType {
+    fn from_arg_value(value: &str) -> Result<Self, String> {
+        match value {
+            "random" => Ok(Self::RandomSearch),
+            _ => Err("invalid optimizer".to_string()),
+        }
+    }
 }

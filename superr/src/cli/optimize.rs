@@ -5,10 +5,12 @@ use std::{
 };
 
 use superr_optimizers::{
-    optimizer::Optimizer,
-    superoptimizer::{Superoptimizer, SuperoptimizerOptions},
+    optimizers::random_search::{RandomSearchOptimizer, RandomSearchOptimizerOptions},
+    Optimizer,
 };
 use superr_vm::{instruction::Instruction, program::Program, vm::VM};
+
+use crate::cli::OptimizerType;
 
 use super::OptimizeSubcommand;
 
@@ -31,18 +33,21 @@ pub fn execute(args: OptimizeSubcommand) {
 
     dbg!(target_state);
 
-    // create and run superoptimizer
-    let mut superoptimizer = Superoptimizer::new(
-        input.clone(), // TODO: ideally don't clone
-        SuperoptimizerOptions {
-            max_instructions: args.max_instructions,
-            max_num: args.max_num,
-            timeout: Duration::from_secs(args.timeout),
-            progress_frequency: args.progress_frequency,
-        },
-    );
+    // initialize optimizer based on which one the user wants to use
+    let mut optimizer = match args.optimizer {
+        // random search
+        OptimizerType::RandomSearch => RandomSearchOptimizer::new(
+            input.clone(),
+            RandomSearchOptimizerOptions {
+                max_instructions: args.max_instructions,
+                max_num: args.max_num,
+                timeout: Duration::from_secs(args.timeout),
+                progress_frequency: args.progress_frequency,
+            },
+        ),
+    };
 
-    let output = superoptimizer.optimize();
+    let output = optimizer.optimize();
 
     // print out instructions for program
     // TODO: ideally don't clone

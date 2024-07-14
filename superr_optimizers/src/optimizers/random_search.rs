@@ -18,19 +18,19 @@ use superr_vm::{
     vm::{self, State, VM},
 };
 
-use crate::optimizer::Optimizer;
+use crate::Optimizer;
 
-pub struct SuperoptimizerOptions {
+pub struct RandomSearchOptimizerOptions {
     pub max_instructions: usize,
     pub max_num: usize,
     pub timeout: Duration,
     pub progress_frequency: u64,
 }
 
-pub struct Superoptimizer {
+pub struct RandomSearchOptimizer {
     pub input: Program,
 
-    pub options: SuperoptimizerOptions,
+    pub options: RandomSearchOptimizerOptions,
 
     pub target_state: Option<State>,
 
@@ -40,8 +40,8 @@ pub struct Superoptimizer {
     pub shortest: Arc<RwLock<Program>>,
 }
 
-impl Superoptimizer {
-    pub fn new(input: Program, options: SuperoptimizerOptions) -> Self {
+impl RandomSearchOptimizer {
+    pub fn new(input: Program, options: RandomSearchOptimizerOptions) -> Self {
         Self {
             input: input.clone(),
 
@@ -55,7 +55,7 @@ impl Superoptimizer {
     }
 }
 
-impl Optimizer for Superoptimizer {
+impl Optimizer for RandomSearchOptimizer {
     fn optimize(&mut self) -> Program {
         // this is a timer for the timeout, we want to stop searching when it's been x
         // amount of seconds since this instant
@@ -88,7 +88,7 @@ impl Optimizer for Superoptimizer {
     }
 }
 
-impl Superoptimizer {
+impl RandomSearchOptimizer {
     #[inline(always)]
     fn should_stop(&self) -> bool {
         self.started.unwrap().elapsed() >= self.options.timeout
