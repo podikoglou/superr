@@ -25,9 +25,7 @@ impl VM {
     pub fn execute(&mut self, instruction: &Instruction) {
         self.pc += 1;
 
-        let instruction = instruction.clone();
-
-        match instruction {
+        match *instruction {
             Instruction::Load(val) => {
                 self.state[0] = val;
             }
