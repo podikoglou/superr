@@ -32,7 +32,7 @@ pub struct RandomSearchOptimizer {
 
     pub options: RandomSearchOptimizerOptions,
 
-    pub target_state: Option<State>,
+    pub target_state: State,
 
     // state shared between threads
     pub started: Option<Instant>,
@@ -44,11 +44,10 @@ impl RandomSearchOptimizer {
     pub fn new(input: Program, options: RandomSearchOptimizerOptions) -> Self {
         Self {
             input: input.clone(),
-
             options,
 
             started: None,
-            target_state: Some(VM::compute_state(&input)),
+            target_state: VM::compute_state(&input),
             counter: Arc::new(AtomicU64::new(0)),
             shortest: Arc::new(RwLock::new(input)),
         }
@@ -66,9 +65,7 @@ impl Optimizer for RandomSearchOptimizer {
             scope.spawn(|_| self.run_progress_loop());
 
             // run the worker threads for computing the shortest possible program
-            for i in 0..rayon::current_num_threads() {
-                eprintln!("Starting thread #{}", i);
-
+            for _ in 0..rayon::current_num_threads() {
                 scope.spawn(|_| self.run_computation_loop())
             }
         });
@@ -80,7 +77,7 @@ impl Optimizer for RandomSearchOptimizer {
         match Arc::try_unwrap(mem::take(&mut self.shortest)) {
             Ok(shortest) => shortest.into_inner().unwrap(),
             Err(arc) => {
-                // this should'nt happen, but if it does, we can still
+                // this shouldn't happen, but if it does, we can still
                 // read the value, just by cloning
                 arc.read().unwrap().clone()
             }
@@ -148,10 +145,6 @@ impl RandomSearchOptimizer {
         // to compute it dynamically.
         let shortest_len = || shortest.read().unwrap().instructions.len();
 
-        // im not actually sure if there's a big overhead when unwrapping `Option`s,
-        // but it doesn't hurt to just unwrap it once here
-        let target_state = self.target_state.unwrap();
-
         loop {
             if self.should_stop() {
                 break;
@@ -162,13 +155,13 @@ impl RandomSearchOptimizer {
             let program = self.generate_program();
             let state = VM::compute_state(&program);
 
-            if state == target_state {
+            if state == self.target_state {
                 // we've found an equivalent program!
                 // now let's see if it's more efficient or not
 
                 let len = program.instructions.len();
 
-                if len < shortest_len() && len < self.options.max_instructions {
+                if len < shortest_len() && len <= self.options.max_instructions {
                     // the program is shorter than the `shortest`! (and also,
                     // shortest than max_instructions) now we just need to
                     // update the shortest variable! (kinda hacky)
