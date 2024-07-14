@@ -16,12 +16,14 @@ impl VM {
         self.pc = 0;
     }
 
+    #[inline(always)]
     pub fn execute_program(&mut self, program: &Program) {
         for instruction in &program.instructions {
             self.execute(&instruction);
         }
     }
 
+    #[inline(always)]
     pub fn execute(&mut self, instruction: &Instruction) {
         self.pc += 1;
 
@@ -44,6 +46,7 @@ impl VM {
         }
     }
 
+    #[inline(always)]
     pub fn compute_state(program: &Program) -> State {
         let mut vm = VM::default();
 

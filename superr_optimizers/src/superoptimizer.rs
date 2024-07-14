@@ -89,6 +89,7 @@ impl Optimizer for Superoptimizer {
 }
 
 impl Superoptimizer {
+    #[inline(always)]
     fn should_stop(&self) -> bool {
         self.started.unwrap().elapsed() >= self.options.timeout
     }
