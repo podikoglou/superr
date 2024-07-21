@@ -37,11 +37,6 @@ pub struct GenSubcommand {
 /// Optimizes a program.
 #[argh(subcommand, name = "optimize")]
 pub struct OptimizeSubcommand {
-    /// time to generate for (in seconds). the program will print the best equivalent program
-    /// it found in that given period of time.
-    #[argh(option, default = "10")]
-    pub timeout: u64,
-
     /// max amount of instructions the output program should have
     #[argh(option)]
     pub max_instructions: usize,

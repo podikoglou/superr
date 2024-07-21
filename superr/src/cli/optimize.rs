@@ -1,7 +1,6 @@
 use std::{
     io::{self, BufRead},
     str::FromStr,
-    time::Duration,
 };
 
 use superr_optimizers::{
@@ -52,7 +51,6 @@ pub fn execute(args: OptimizeSubcommand) {
                 RandomSearchOptimizerOptions {
                     max_instructions: args.max_instructions,
                     max_num: args.max_num,
-                    timeout: Duration::from_secs(args.timeout),
                     progress_frequency: args.progress_frequency,
                 },
             );

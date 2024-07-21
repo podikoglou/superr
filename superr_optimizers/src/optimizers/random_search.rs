@@ -4,14 +4,13 @@ use num_format::{Locale, ToFormattedString};
 use std::{
     mem,
     sync::{
-        atomic::{AtomicU64, Ordering},
+        atomic::{AtomicBool, AtomicU64, Ordering},
         Arc, RwLock,
     },
     thread,
     time::{Duration, Instant},
 };
 
-use rand::Rng;
 use superr_vm::{
     instruction::Instruction,
     program::Program,
@@ -23,7 +22,6 @@ use crate::Optimizer;
 pub struct RandomSearchOptimizerOptions {
     pub max_instructions: usize,
     pub max_num: usize,
-    pub timeout: Duration,
     pub progress_frequency: u64,
 }
 
@@ -38,6 +36,7 @@ pub struct RandomSearchOptimizer {
     pub started: Option<Instant>,
     pub counter: Arc<AtomicU64>,
     pub shortest: Arc<RwLock<Program>>,
+    pub stop: Arc<AtomicBool>,
 }
 
 impl RandomSearchOptimizer {
@@ -50,15 +49,23 @@ impl RandomSearchOptimizer {
             target_state: VM::compute_state(&input),
             counter: Arc::new(AtomicU64::new(0)),
             shortest: Arc::new(RwLock::new(input)),
+            stop: Arc::new(AtomicBool::new(false)),
         }
     }
 }
 
 impl Optimizer for RandomSearchOptimizer {
     fn optimize(&mut self) -> Program {
-        // this is a timer for the timeout, we want to stop searching when it's been x
-        // amount of seconds since this instant
         self.started = Some(Instant::now());
+
+        // let's set a ctrl c handler, which makes the program stop when
+        // ctrl c is pressed
+        let stop = self.stop.clone();
+
+        ctrlc::set_handler(move || {
+            stop.store(true, Ordering::Relaxed);
+        })
+        .expect("Error setting Ctrl-C handler");
 
         rayon::scope(|scope| {
             // run the progress-reporting thread
@@ -88,7 +95,9 @@ impl Optimizer for RandomSearchOptimizer {
 impl RandomSearchOptimizer {
     #[inline(always)]
     fn should_stop(&self) -> bool {
-        self.started.unwrap().elapsed() >= self.options.timeout
+        let stop = self.stop.clone();
+
+        stop.load(Ordering::Relaxed)
     }
 
     fn run_progress_loop(&self) {
