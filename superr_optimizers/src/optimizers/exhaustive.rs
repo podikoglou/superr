@@ -15,7 +15,7 @@ use itertools::Itertools;
 use num_format::{Locale, ToFormattedString};
 use rayon::prelude::*;
 use superr_vm::{
-    instruction::{Instruction},
+    instruction::Instruction,
     program::Program,
     vm::{State, MEM_SIZE, VM},
 };
@@ -65,10 +65,11 @@ impl Optimizer for ExhaustiveOptimizer {
 
         let counter = self.counter.clone();
         let shortest = self.shortest.clone();
-        let stop = self.stop.clone();
 
         // let's set a ctrl c handler, which makes the program stop when
         // ctrl c is pressed
+        let stop = self.stop.clone();
+
         ctrlc::set_handler(move || {
             stop.store(true, Ordering::Relaxed);
         })
@@ -77,6 +78,7 @@ impl Optimizer for ExhaustiveOptimizer {
         // gets the length of the shortest program. this is a function because
         // the shortest program can be updated at any time, therefore we need
         // to compute it dynamically.
+
         let shortest_len = || shortest.read().unwrap().instructions.len();
 
         rayon::scope(|scope| {
