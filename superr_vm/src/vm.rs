@@ -1,6 +1,6 @@
 use crate::{instruction::Instruction, program::Program};
 
-pub const MEM_SIZE: usize = 6;
+pub const MEM_SIZE: usize = 12;
 
 pub type State = [usize; MEM_SIZE];
 

@@ -62,12 +62,14 @@ pub struct OptimizeSubcommand {
 #[derive(Debug, PartialEq)]
 pub enum OptimizerType {
     RandomSearch,
+    Exhaustive,
 }
 
 impl FromArgValue for OptimizerType {
     fn from_arg_value(value: &str) -> Result<Self, String> {
         match value {
-            "random" => Ok(Self::RandomSearch),
+            "random" | "random-search" | "random_search" => Ok(Self::RandomSearch),
+            "exhaustive" => Ok(Self::Exhaustive),
             _ => Err("invalid optimizer".to_string()),
         }
     }

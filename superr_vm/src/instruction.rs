@@ -4,7 +4,7 @@ use anyhow::{anyhow, Error};
 
 use crate::address::MemoryAddress;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Copy, Eq, Hash)]
 pub enum Instruction {
     Load(usize),
     Swap(MemoryAddress, MemoryAddress),

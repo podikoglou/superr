@@ -5,7 +5,10 @@ use std::{
 };
 
 use superr_optimizers::{
-    optimizers::random_search::{RandomSearchOptimizer, RandomSearchOptimizerOptions},
+    optimizers::{
+        exhaustive::{ExhaustiveOptimizer, ExhaustiveOptimizerOptions},
+        random_search::{RandomSearchOptimizer, RandomSearchOptimizerOptions},
+    },
     Optimizer,
 };
 use superr_vm::{instruction::Instruction, program::Program, vm::VM};
@@ -26,37 +29,62 @@ pub fn execute(args: OptimizeSubcommand) {
         }
     }
 
+    println!("*** Input Program ***");
+    print_program(&input);
+    println!();
+
     // run the program just to find out what the target state is. we don't need this
     // immediately, we only really use it for the output at the end. in fact,
     // this is computed twice, once hre and once inside the optimize method.
     let target_state = VM::compute_state(&input);
 
     dbg!(target_state);
+    println!();
 
-    // initialize optimizer based on which one the user wants to use
-    let mut optimizer = match args.optimizer {
+    // use the optimizer the user wants to optimize the program
+    let output: Program;
+
+    match args.optimizer {
         // random search
-        OptimizerType::RandomSearch => RandomSearchOptimizer::new(
-            input.clone(),
-            RandomSearchOptimizerOptions {
-                max_instructions: args.max_instructions,
-                max_num: args.max_num,
-                timeout: Duration::from_secs(args.timeout),
-                progress_frequency: args.progress_frequency,
-            },
-        ),
+        OptimizerType::RandomSearch => {
+            let mut optimizer = RandomSearchOptimizer::new(
+                input.clone(),
+                RandomSearchOptimizerOptions {
+                    max_instructions: args.max_instructions,
+                    max_num: args.max_num,
+                    timeout: Duration::from_secs(args.timeout),
+                    progress_frequency: args.progress_frequency,
+                },
+            );
+
+            output = optimizer.optimize();
+        }
+
+        // exhaustive
+        OptimizerType::Exhaustive => {
+            let mut optimizer = ExhaustiveOptimizer::new(
+                input.clone(),
+                ExhaustiveOptimizerOptions {
+                    max_instructions: args.max_instructions,
+                    max_num: args.max_num,
+                    progress_frequency: args.progress_frequency,
+                },
+            );
+
+            output = optimizer.optimize();
+        }
     };
 
-    let output = optimizer.optimize();
+    println!("*** Output Program ***");
+    print_program(&output);
+    println!();
 
-    // print out instructions for program
-    // TODO: ideally don't clone
-    for instruction in output.clone().instructions {
+    println!("Input Program: {} Instructions", input.instructions.len());
+    println!("Output Program: {} Instructions", output.instructions.len());
+}
+
+fn print_program(program: &Program) {
+    for instruction in &program.instructions {
         println!("{}", instruction.to_string());
     }
-
-    // these are printed to stderr so it doesn't get in the way of the user if
-    //  they're piping the output of this program
-    eprintln!("Input Program: {} Instructions", input.instructions.len());
-    eprintln!("Output Program: {} Instructions", output.instructions.len());
 }
