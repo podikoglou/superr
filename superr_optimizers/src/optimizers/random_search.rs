@@ -187,20 +187,25 @@ impl RandomSearchOptimizer {
     fn generate_program(&self) -> Program {
         let mut program = Program::new();
 
-        let mut rng = rand::thread_rng();
+        // let mut rng = rand::thread_rng();
 
         // generate a random amount of instructions for the program to have. this amount is
         // within 0 and the given max_instructions.
-        let instructions_amount = rng.gen_range(0..=self.options.max_instructions);
+        // let instructions_amount = rng.gen_range(0..=self.options.max_instructions);
+        let instructions_amount = fastrand::usize(0..=self.options.max_instructions);
 
         // generate the instructions of the program
         for _ in 0..instructions_amount {
-            let reg1 = rng.gen_range(0..vm::MEM_SIZE);
-            let reg2 = rng.gen_range(0..vm::MEM_SIZE);
+            // let reg1 = rng.gen_range(0..vm::MEM_SIZE);
+            // let reg2 = rng.gen_range(0..vm::MEM_SIZE);
+            let reg1 = fastrand::usize(0..vm::MEM_SIZE);
+            let reg2 = fastrand::usize(0..vm::MEM_SIZE);
 
-            let val = rng.gen_range(0..self.options.max_num);
+            // let val = rng.gen_range(0..self.options.max_num);
+            let val = fastrand::usize(0..self.options.max_num);
 
-            let instruction = rng.gen_range(0..=3);
+            // let instruction = rng.gen_range(0..=3);
+            let instruction = fastrand::usize(0..=3);
 
             let instruction = match instruction {
                 0 => Instruction::Load(val),
