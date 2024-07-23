@@ -1,6 +1,3 @@
-use humantime::{self, format_duration};
-use indicatif::{ProgressBar, ProgressStyle};
-use num_format::{Locale, ToFormattedString};
 use std::{
     mem,
     sync::{
@@ -11,6 +8,10 @@ use std::{
     time::{Duration, Instant},
 };
 
+use humantime::format_duration;
+use indicatif::{ProgressBar, ProgressStyle};
+use num_format::{Locale, ToFormattedString};
+use rayon::ThreadPool;
 use superr_vm::{
     instruction::Instruction,
     program::Program,
@@ -19,69 +20,79 @@ use superr_vm::{
 
 use crate::Optimizer;
 
+pub struct RandomSearchOptimizerState {
+    pub optimal: Arc<RwLock<Program>>,
+    pub target_state: State,
+
+    pub started: Option<Instant>,
+    pub should_stop: Arc<AtomicBool>,
+
+    pub thread_pool: ThreadPool,
+
+    pub counter: Arc<AtomicU64>,
+}
+
 pub struct RandomSearchOptimizerOptions {
-    pub max_instructions: usize,
     pub max_num: usize,
-    pub progress_frequency: u64,
+    pub max_instructions: usize,
 }
 
 pub struct RandomSearchOptimizer {
-    pub input: Program,
-
+    pub state: RandomSearchOptimizerState,
     pub options: RandomSearchOptimizerOptions,
-
-    pub target_state: State,
-
-    // state shared between threads
-    pub started: Option<Instant>,
-    pub counter: Arc<AtomicU64>,
-    pub shortest: Arc<RwLock<Program>>,
-    pub stop: Arc<AtomicBool>,
-}
-
-impl RandomSearchOptimizer {
-    pub fn new(input: Program, options: RandomSearchOptimizerOptions) -> Self {
-        Self {
-            input: input.clone(),
-            options,
-
-            started: None,
-            target_state: VM::compute_state(&input),
-            counter: Arc::new(AtomicU64::new(0)),
-            shortest: Arc::new(RwLock::new(input)),
-            stop: Arc::new(AtomicBool::new(false)),
-        }
-    }
 }
 
 impl Optimizer for RandomSearchOptimizer {
-    fn optimize(&mut self) -> Program {
-        self.started = Some(Instant::now());
+    type Options = RandomSearchOptimizerOptions;
+    type State = RandomSearchOptimizerState;
 
-        // let's set a ctrl c handler, which makes the program stop when
-        // ctrl c is pressed
-        let stop = self.stop.clone();
+    fn new(options: Self::Options, program: superr_vm::program::Program) -> Self {
+        let target_state = VM::compute_state(&program);
+
+        Self {
+            options,
+            state: RandomSearchOptimizerState {
+                optimal: Arc::new(RwLock::new(program)),
+                target_state: target_state,
+
+                started: None,
+                should_stop: Arc::new(AtomicBool::new(false)),
+
+                thread_pool: rayon::ThreadPoolBuilder::new().build().unwrap(),
+
+                counter: Arc::new(AtomicU64::new(0)),
+            },
+        }
+    }
+
+    fn start_optimization(&mut self) -> Program {
+        self.state.started = Some(Instant::now());
+        self.state.should_stop = Arc::new(AtomicBool::new(false));
+
+        // set ctrl+c handler
+        let should_stop = self.state.should_stop.clone();
 
         ctrlc::set_handler(move || {
-            stop.store(true, Ordering::Relaxed);
+            should_stop.store(true, Ordering::Relaxed);
         })
         .expect("Error setting Ctrl-C handler");
 
-        rayon::scope(|scope| {
+        self.state.thread_pool.scope(|scope| {
             // run the progress-reporting thread
-            scope.spawn(|_| self.run_progress_loop());
+            scope.spawn(|_| self.progress_loop());
 
             // run the worker threads for computing the shortest possible program
-            for _ in 0..rayon::current_num_threads() {
-                scope.spawn(|_| self.run_computation_loop())
+            for _ in 0..rayon::current_num_threads() - 1 {
+                scope.spawn(|_| self.work());
             }
         });
 
-        // scope basically joins all the threads, so it blocks until all of them
-        // are finished.
-        eprintln!("Stopping");
+        self.optimal()
+    }
 
-        match Arc::try_unwrap(mem::take(&mut self.shortest)) {
+    /// This should *probably* only be called once.
+    fn optimal(&mut self) -> superr_vm::program::Program {
+        match Arc::try_unwrap(mem::take(&mut self.state.optimal)) {
             Ok(shortest) => shortest.into_inner().unwrap(),
             Err(arc) => {
                 // this shouldn't happen, but if it does, we can still
@@ -90,21 +101,54 @@ impl Optimizer for RandomSearchOptimizer {
             }
         }
     }
-}
 
-impl RandomSearchOptimizer {
-    #[inline(always)]
-    fn should_stop(&self) -> bool {
-        let stop = self.stop.clone();
-
-        stop.load(Ordering::Relaxed)
+    fn current_optimal_length(&self) -> usize {
+        self.state.optimal.read().unwrap().instructions.len()
     }
 
-    fn run_progress_loop(&self) {
-        let counter = self.counter.clone();
-        let started = self.started.unwrap().clone();
+    fn should_stop(&self) -> bool {
+        self.state.should_stop.load(Ordering::Relaxed)
+    }
 
-        let progress_frequency = Duration::from_millis(self.options.progress_frequency);
+    fn work(&self) {
+        let counter = self.state.counter.clone();
+
+        while !self.should_stop() {
+            // generate a completely random program, and compute its state
+            let program = self.generate_program();
+            let state = vm::VM::compute_state(&program);
+
+            // let's check if the state we just computed is equal to our target_state
+            if self.state.target_state == state {
+                // we now need to check if this program is shorter than the given program
+                // (there is a chance that it's not, depending on the options)
+                if program.instructions.len() < self.current_optimal_length() {
+                    // since the program we found is more efficient, we update the optimal
+                    // program to be the one we just found.
+
+                    eprintln!(
+                        "Found more optimal program ({} instructions)",
+                        program.instructions.len()
+                    );
+
+                    {
+                        let mut lock = self.state.optimal.write().unwrap();
+
+                        let _ = mem::replace(&mut *lock, program);
+                    }
+                }
+            }
+
+            // increment the counter
+            counter.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+
+    fn progress_loop(&self) {
+        let counter = self.state.counter.clone();
+        let started = self.state.started.unwrap().clone();
+
+        let mut last_count = 0;
 
         // create progress bar
         let bar = ProgressBar::new_spinner();
@@ -112,30 +156,26 @@ impl RandomSearchOptimizer {
         bar.set_style(
             ProgressStyle::default_spinner()
                 .template("{spinner:.green} [{elapsed_precise}] {msg}")
-                .unwrap()
-                .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ "),
+                .unwrap(),
         );
 
-        let mut last_count = 0;
+        while !self.should_stop() {
+            thread::sleep(Duration::from_secs(1));
 
-        loop {
-            if self.should_stop() {
-                break;
-            }
-
-            thread::sleep(progress_frequency);
-
+            // load counter
             let current = counter.load(Ordering::Relaxed);
-            let elapsed = started.elapsed();
 
-            let programs_per_second =
-                ((current - last_count) as f64 / progress_frequency.as_secs_f64()) as u64;
+            // calculate and normalize time elapsed
+            let elapsed = Duration::from_secs(started.elapsed().as_secs());
+
+            // calculate programs per second
+            let programs_per_second = current - last_count;
 
             let message = format!(
                 "{} Programs tested | {}/s | {}",
                 current.to_formatted_string(&Locale::en),
                 programs_per_second.to_formatted_string(&Locale::en),
-                format_duration(normalize_duration(elapsed))
+                format_duration(elapsed)
             );
 
             bar.set_message(message);
@@ -144,76 +184,24 @@ impl RandomSearchOptimizer {
             last_count = current;
         }
     }
+}
 
-    fn run_computation_loop(&self) {
-        let counter = self.counter.clone();
-        let shortest = self.shortest.clone();
-
-        // gets the length of the shortest program. this is a function because
-        // the shortest program can be updated at any time, therefore we need
-        // to compute it dynamically.
-        let shortest_len = || shortest.read().unwrap().instructions.len();
-
-        loop {
-            if self.should_stop() {
-                break;
-            }
-
-            // generate a random program, and execute it in a temporary VM
-            // to get the end state
-            let program = self.generate_program();
-            let state = VM::compute_state(&program);
-
-            if state == self.target_state {
-                // we've found an equivalent program!
-                // now let's see if it's more efficient or not
-
-                let len = program.instructions.len();
-
-                if len < shortest_len() && len <= self.options.max_instructions {
-                    // the program is shorter than the `shortest`! (and also,
-                    // shortest than max_instructions) now we just need to
-                    // update the shortest variable! (kinda hacky)
-
-                    eprintln!(
-                        "Found shorter program ({} less instructions)",
-                        shortest_len() - len
-                    );
-
-                    {
-                        let mut lock = shortest.write().unwrap();
-
-                        let _ = mem::replace(&mut *lock, program);
-                    }
-                }
-            }
-
-            // increase the counter
-            counter.fetch_add(1, Ordering::Relaxed);
-        }
-    }
-
+impl RandomSearchOptimizer {
+    /// Randomly generates a program based on the [`RandomSearchOptimizerOptions`].
     fn generate_program(&self) -> Program {
         let mut program = Program::new();
 
-        // let mut rng = rand::thread_rng();
-
         // generate a random amount of instructions for the program to have. this amount is
         // within 0 and the given max_instructions.
-        // let instructions_amount = rng.gen_range(0..=self.options.max_instructions);
         let instructions_amount = fastrand::usize(0..=self.options.max_instructions);
 
         // generate the instructions of the program
         for _ in 0..instructions_amount {
-            // let reg1 = rng.gen_range(0..vm::MEM_SIZE);
-            // let reg2 = rng.gen_range(0..vm::MEM_SIZE);
             let reg1 = fastrand::usize(0..vm::MEM_SIZE);
             let reg2 = fastrand::usize(0..vm::MEM_SIZE);
 
-            // let val = rng.gen_range(0..self.options.max_num);
             let val = fastrand::usize(0..self.options.max_num);
 
-            // let instruction = rng.gen_range(0..=3);
             let instruction = fastrand::usize(0..=3);
 
             let instruction = match instruction {
@@ -228,8 +216,4 @@ impl RandomSearchOptimizer {
 
         program
     }
-}
-
-fn normalize_duration(duration: Duration) -> Duration {
-    Duration::from_secs(duration.as_secs())
 }

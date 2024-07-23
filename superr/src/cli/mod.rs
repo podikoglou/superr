@@ -45,10 +45,6 @@ pub struct OptimizeSubcommand {
     #[argh(option)]
     pub max_num: usize,
 
-    /// frequency of progress reports (in milliseconds)
-    #[argh(option, default = "250")]
-    pub progress_frequency: u64,
-
     /// optimizer to use (options: random)
     #[argh(option)]
     pub optimizer: OptimizerType,

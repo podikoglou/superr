@@ -40,36 +40,34 @@ pub fn execute(args: OptimizeSubcommand) {
     dbg!(target_state);
     println!();
 
-    // use the optimizer the user wants to optimize the program
     let output: Program;
 
     match args.optimizer {
         // random search
         OptimizerType::RandomSearch => {
             let mut optimizer = RandomSearchOptimizer::new(
-                input.clone(),
                 RandomSearchOptimizerOptions {
                     max_instructions: args.max_instructions,
                     max_num: args.max_num,
-                    progress_frequency: args.progress_frequency,
+                    // progress_frequency: args.progress_frequency,
                 },
+                input.clone(),
             );
 
-            output = optimizer.optimize();
+            output = optimizer.start_optimization();
         }
 
         // exhaustive
         OptimizerType::Exhaustive => {
             let mut optimizer = ExhaustiveOptimizer::new(
-                input.clone(),
                 ExhaustiveOptimizerOptions {
                     max_instructions: args.max_instructions,
                     max_num: args.max_num,
-                    progress_frequency: args.progress_frequency,
                 },
+                input.clone(),
             );
 
-            output = optimizer.optimize();
+            output = optimizer.start_optimization();
         }
     };
 
@@ -78,7 +76,7 @@ pub fn execute(args: OptimizeSubcommand) {
     println!();
 
     println!("Input Program: {} Instructions", input.instructions.len());
-    println!("Output Program: {} Instructions", output.instructions.len());
+    println!("Output Program: {} Instructions", output.instructions.len())
 }
 
 fn print_program(program: &Program) {

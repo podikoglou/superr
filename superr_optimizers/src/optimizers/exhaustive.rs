@@ -1,19 +1,21 @@
-use std::{
-    mem,
-    sync::{
-        atomic::{AtomicBool, AtomicUsize, Ordering},
-        Arc, RwLock,
-    },
-    thread,
-    time::{Duration, Instant},
-};
-
 use anyhow::anyhow;
 use humantime::format_duration;
 use indicatif::{ProgressBar, ProgressStyle};
 use itertools::Itertools;
 use num_format::{Locale, ToFormattedString};
-use rayon::prelude::*;
+use rayon::{
+    iter::{ParallelBridge, ParallelIterator},
+    ThreadPool,
+};
+use std::{
+    mem,
+    sync::{
+        atomic::{AtomicBool, AtomicU64, Ordering},
+        Arc, RwLock,
+    },
+    thread,
+    time::{Duration, Instant},
+};
 use superr_vm::{
     instruction::Instruction,
     program::Program,
@@ -24,122 +26,120 @@ use crate::Optimizer;
 
 const INSTRUCTIONS: [&'static str; 4] = ["LOAD", "SWAP", "XOR", "INC"];
 
+pub struct ExhaustiveOptimizerState {
+    pub optimal: Arc<RwLock<Program>>,
+    pub target_state: State,
+
+    pub started: Option<Instant>,
+    pub should_stop: Arc<AtomicBool>,
+
+    pub thread_pool: ThreadPool,
+
+    pub counter: Arc<AtomicU64>,
+}
+
 pub struct ExhaustiveOptimizerOptions {
     pub max_instructions: usize,
     pub max_num: usize,
-    pub progress_frequency: u64,
 }
 
 pub struct ExhaustiveOptimizer {
-    pub input: Program,
+    pub state: ExhaustiveOptimizerState,
     pub options: ExhaustiveOptimizerOptions,
-    pub target_state: State,
-
-    // state
-    pub started: Option<Instant>,
-    pub counter: Arc<AtomicUsize>,
-    pub shortest: Arc<RwLock<Program>>,
-    pub stop: Arc<AtomicBool>,
-}
-
-impl ExhaustiveOptimizer {
-    pub fn new(input: Program, options: ExhaustiveOptimizerOptions) -> Self {
-        Self {
-            input: input.clone(),
-            options,
-
-            target_state: VM::compute_state(&input),
-            started: None,
-            counter: Arc::new(AtomicUsize::new(0)),
-            shortest: Arc::new(RwLock::new(input)),
-            stop: Arc::new(AtomicBool::new(false)),
-        }
-    }
 }
 
 impl Optimizer for ExhaustiveOptimizer {
-    fn optimize(&mut self) -> Program {
-        self.started = Some(Instant::now());
+    type Options = ExhaustiveOptimizerOptions;
+    type State = ExhaustiveOptimizerState;
 
-        eprintln!("Generating Programs");
+    fn new(options: Self::Options, program: superr_vm::program::Program) -> Self {
+        let target_state = VM::compute_state(&program);
 
-        let counter = self.counter.clone();
-        let shortest = self.shortest.clone();
+        Self {
+            options,
+            state: ExhaustiveOptimizerState {
+                optimal: Arc::new(RwLock::new(program)),
+                target_state: target_state,
 
-        // let's set a ctrl c handler, which makes the program stop when
-        // ctrl c is pressed
-        let stop = self.stop.clone();
+                started: None,
+                should_stop: Arc::new(AtomicBool::new(false)),
+
+                thread_pool: rayon::ThreadPoolBuilder::new().build().unwrap(),
+
+                counter: Arc::new(AtomicU64::new(0)),
+            },
+        }
+    }
+
+    fn start_optimization(&mut self) -> Program {
+        self.state.started = Some(Instant::now());
+        self.state.should_stop = Arc::new(AtomicBool::new(false));
+
+        // set ctrl+c handler
+        let should_stop = self.state.should_stop.clone();
 
         ctrlc::set_handler(move || {
-            stop.store(true, Ordering::Relaxed);
+            should_stop.store(true, Ordering::Relaxed);
         })
         .expect("Error setting Ctrl-C handler");
 
-        // gets the length of the shortest program. this is a function because
-        // the shortest program can be updated at any time, therefore we need
-        // to compute it dynamically.
-
-        let shortest_len = || shortest.read().unwrap().instructions.len();
-
-        rayon::scope(|scope| {
+        self.state.thread_pool.scope(|scope| {
             // run the progress-reporting thread
-            scope.spawn(|_| self.run_progress_loop());
+            scope.spawn(|_| self.progress_loop());
 
+            // create programs iterator, run workers
             let programs = self.generate_programs();
+            let counter = self.state.counter.clone();
 
-            // we use try_for_each so that we can stop the processing if
-            // ctrl c is pressed by the user, by returning an error.
             programs
+                .into_iter()
                 .par_bridge()
                 .try_for_each(|program| -> Result<(), anyhow::Error> {
+                    // if we need to stop, throw an error.
+                    // since we're using try_for_each, throwing an error
+                    // will cause the function to stop.
+                    //
+                    // there's literally no other way to stop.
                     if self.should_stop() {
                         return Err(anyhow!("Forcefully stopping"));
                     }
 
-                    // execute it in a temporary VM to get the end state
+                    // compute the state of the program and compare it to the target state
                     let state = VM::compute_state(&program);
 
-                    if state == self.target_state {
-                        // we've found an equivalent program!
-                        // now let's see if it's more efficient or not
-
-                        let len = program.instructions.len();
-
-                        if len < shortest_len() && len <= self.options.max_instructions {
-                            // the program is shorter than the `shortest`! (and also,
-                            // shortest than max_instructions) now we just need to
-                            // update the shortest variable! (kinda hacky)
+                    // let's check if the state we just computed is equal to our target_state
+                    if self.state.target_state == state {
+                        // we now need to check if this program is shorter than the given program
+                        // (there is a chance that it's not, depending on the options)
+                        if program.instructions.len() < self.current_optimal_length() {
+                            // since the program we found is more efficient, we update the optimal
+                            // program to be the one we just found.
 
                             eprintln!(
-                                "Found shorter program ({} less instructions)",
-                                shortest_len() - len
+                                "Found more optimal program ({} instructions)",
+                                program.instructions.len()
                             );
 
                             {
-                                let mut lock = shortest.write().unwrap();
+                                let mut lock = self.state.optimal.write().unwrap();
 
-                                let _ = mem::replace(&mut *lock, program.clone());
+                                let _ = mem::replace(&mut *lock, program);
                             }
                         }
                     }
 
-                    // increase the counter
+                    // increment the counter
                     counter.fetch_add(1, Ordering::Relaxed);
-
                     Ok(())
                 })
                 .ok();
-
-            let stop = self.stop.clone();
-
-            stop.store(true, Ordering::Relaxed);
         });
 
-        // scope basically joins all the threads, so it blocks until all of them
-        // are finished.
-        eprintln!("Stopping");
+        self.optimal()
+    }
 
-        match Arc::try_unwrap(mem::take(&mut self.shortest)) {
+    fn optimal(&mut self) -> superr_vm::program::Program {
+        match Arc::try_unwrap(mem::take(&mut self.state.optimal)) {
             Ok(shortest) => shortest.into_inner().unwrap(),
             Err(arc) => {
                 // this shouldn't happen, but if it does, we can still
@@ -148,21 +148,24 @@ impl Optimizer for ExhaustiveOptimizer {
             }
         }
     }
-}
 
-impl ExhaustiveOptimizer {
-    #[inline(always)]
-    fn should_stop(&self) -> bool {
-        let stop = self.stop.clone();
-
-        stop.load(Ordering::Relaxed)
+    fn current_optimal_length(&self) -> usize {
+        self.state.optimal.read().unwrap().instructions.len()
     }
 
-    fn run_progress_loop(&self) {
-        let counter = self.counter.clone();
-        let started = self.started.unwrap().clone();
+    fn should_stop(&self) -> bool {
+        self.state.should_stop.load(Ordering::Relaxed)
+    }
 
-        let progress_frequency = Duration::from_millis(self.options.progress_frequency);
+    fn work(&self) {
+        todo!()
+    }
+
+    fn progress_loop(&self) {
+        let counter = self.state.counter.clone();
+        let started = self.state.started.unwrap().clone();
+
+        let mut last_count = 0;
 
         // create progress bar
         let bar = ProgressBar::new_spinner();
@@ -170,30 +173,26 @@ impl ExhaustiveOptimizer {
         bar.set_style(
             ProgressStyle::default_spinner()
                 .template("{spinner:.green} [{elapsed_precise}] {msg}")
-                .unwrap()
-                .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ "),
+                .unwrap(),
         );
 
-        let mut last_count = 0;
+        while !self.should_stop() {
+            thread::sleep(Duration::from_secs(1));
 
-        loop {
-            if self.should_stop() {
-                break;
-            }
-
-            thread::sleep(progress_frequency);
-
+            // load counter
             let current = counter.load(Ordering::Relaxed);
-            let elapsed = started.elapsed();
 
-            let programs_per_second =
-                ((current - last_count) as f64 / progress_frequency.as_secs_f64()) as u64;
+            // calculate and normalize time elapsed
+            let elapsed = Duration::from_secs(started.elapsed().as_secs());
+
+            // calculate programs per second
+            let programs_per_second = current - last_count;
 
             let message = format!(
                 "{} Programs tested | {}/s | {}",
                 current.to_formatted_string(&Locale::en),
                 programs_per_second.to_formatted_string(&Locale::en),
-                format_duration(normalize_duration(elapsed))
+                format_duration(elapsed)
             );
 
             bar.set_message(message);
@@ -202,7 +201,9 @@ impl ExhaustiveOptimizer {
             last_count = current;
         }
     }
+}
 
+impl ExhaustiveOptimizer {
     fn generate_programs(&self) -> impl Iterator<Item = Program> + '_ {
         let max_length = self.options.max_instructions;
 
@@ -251,8 +252,4 @@ impl ExhaustiveOptimizer {
             _ => panic!("Unknown instruction: {}", inst),
         }
     }
-}
-
-fn normalize_duration(duration: Duration) -> Duration {
-    Duration::from_secs(duration.as_secs())
 }
