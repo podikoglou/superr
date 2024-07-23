@@ -219,31 +219,29 @@ impl ExhaustiveOptimizer {
                             instructions: inst_combo
                                 .iter()
                                 .zip(args)
-                                .map(|(&inst, args)| self.create_instruction(inst, &args))
+                                .map(|(&inst, args)| self.create_instruction(inst, args))
                                 .collect(),
                         })
                 })
         })
     }
 
-    fn gen_arg_sets(&self, instruction: &str) -> Vec<Vec<usize>> {
+    fn gen_arg_sets(&self, instruction: &str) -> Vec<[usize; 2]> {
         match instruction {
-            "LOAD" => (0..=self.options.max_num)
-                .map(|val| vec![val])
-                .collect_vec(),
+            "LOAD" => (0..=self.options.max_num).map(|val| [val, 0]).collect_vec(),
 
             "SWAP" | "XOR" => (0..MEM_SIZE)
                 .cartesian_product(0..MEM_SIZE)
-                .map(|(a, b)| vec![a, b])
+                .map(|(a, b)| [a, b])
                 .collect(),
 
-            "INC" => (0..MEM_SIZE).map(|val| vec![val]).collect(),
+            "INC" => (0..MEM_SIZE).map(|val| [val, 0]).collect(),
 
             _ => panic!("Unknown instruction: {}", instruction),
         }
     }
 
-    fn create_instruction(&self, inst: &str, args: &[usize]) -> Instruction {
+    fn create_instruction(&self, inst: &str, args: [usize; 2]) -> Instruction {
         match inst {
             "LOAD" => Instruction::Load(args[0]),
             "SWAP" => Instruction::Swap(args[0], args[1]),
