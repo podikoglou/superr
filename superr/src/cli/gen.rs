@@ -10,7 +10,7 @@ pub fn execute(args: GenSubcommand) {
         let reg1 = rng.gen_range(0..vm::MEM_SIZE);
         let reg2 = rng.gen_range(0..vm::MEM_SIZE);
 
-        let val = rng.gen_range(0..32);
+        let val = rng.gen_range(0..12);
 
         let instruction = rng.gen_range(0..=3);
 
