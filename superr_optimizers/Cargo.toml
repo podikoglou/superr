@@ -12,6 +12,5 @@ fastrand = "2.1.0"
 indicatif = "0.17.8"
 itertools = "0.13.0"
 num-format = "0.4.4"
-rand = "0.8.5"
 rayon = "1.10.0"
 superr_vm = { path = "../superr_vm/" }

@@ -338,7 +338,6 @@ dependencies = [
  "indicatif",
  "itertools",
  "num-format",
- "rand",
  "rayon",
  "superr_vm",
 ]
