@@ -1,5 +1,4 @@
 use anyhow::anyhow;
-use humantime::format_duration;
 use indicatif::{ProgressBar, ProgressStyle};
 use itertools::Itertools;
 use num_format::{Locale, ToFormattedString};
@@ -163,7 +162,6 @@ impl Optimizer for ExhaustiveOptimizer {
 
     fn progress_loop(&self) {
         let counter = self.state.counter.clone();
-        let started = self.state.started.unwrap().clone();
 
         let mut last_count = 0;
 
@@ -182,17 +180,13 @@ impl Optimizer for ExhaustiveOptimizer {
             // load counter
             let current = counter.load(Ordering::Relaxed);
 
-            // calculate and normalize time elapsed
-            let elapsed = Duration::from_secs(started.elapsed().as_secs());
-
             // calculate programs per second
             let programs_per_second = current - last_count;
 
             let message = format!(
-                "{} Programs tested | {}/s | {}",
+                "{} Programs tested | {}/s",
                 current.to_formatted_string(&Locale::en),
                 programs_per_second.to_formatted_string(&Locale::en),
-                format_duration(elapsed)
             );
 
             bar.set_message(message);
