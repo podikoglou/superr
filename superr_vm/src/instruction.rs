@@ -23,60 +23,50 @@ mod parsers {
     use nom::{
         bytes::complete::tag,
         character::complete::{space0, u8},
-        sequence::{preceded, separated_pair},
+        sequence::separated_pair,
         Err, IResult,
     };
 
     use super::Instruction;
 
-    fn load_parser(i: &str) -> IResult<&str, u8> {
-        preceded(tag("LOAD"), preceded(space0, u8))(i)
+    fn load_parser(i: &str) -> IResult<&str, (&str, u8)> {
+        separated_pair(tag("LOAD"), space0, u8)(i)
     }
 
-    fn swap_parser(i: &str) -> IResult<&str, (u8, u8)> {
-        preceded(
-            tag("SWAP"),
-            preceded(space0, separated_pair(u8, space0, u8)),
-        )(i)
+    fn swap_parser(i: &str) -> IResult<&str, (&str, (u8, u8))> {
+        separated_pair(tag("SWAP"), space0, separated_pair(u8, space0, u8))(i)
     }
 
-    fn xor_parser(i: &str) -> IResult<&str, (u8, u8)> {
-        preceded(tag("XOR"), preceded(space0, separated_pair(u8, space0, u8)))(i)
+    fn xor_parser(i: &str) -> IResult<&str, (&str, (u8, u8))> {
+        separated_pair(tag("XOR"), space0, separated_pair(u8, space0, u8))(i)
     }
 
-    fn inc_parser(i: &str) -> IResult<&str, u8> {
-        preceded(tag("INC"), preceded(space0, u8))(i)
+    fn inc_parser(i: &str) -> IResult<&str, (&str, u8)> {
+        separated_pair(tag("INC"), space0, u8)(i)
     }
 
     pub fn instruction_parser(i: &str) -> IResult<&str, Instruction> {
         match load_parser(i) {
-            Ok((_, val)) => return Ok((i, Instruction::Load(val as usize))),
+            Ok((_, (_, val))) => return Ok((i, Instruction::Load(val as usize))),
             _ => {}
         }
 
         match swap_parser(i) {
-            Ok((_, (addr1, addr2))) => {
-                return Ok((i, Instruction::Swap(addr1 as usize, addr2 as usize)))
-            }
-            _ => {}
-        };
-
-        match swap_parser(i) {
-            Ok((_, (addr1, addr2))) => {
+            Ok((_, (_, (addr1, addr2)))) => {
                 return Ok((i, Instruction::Swap(addr1 as usize, addr2 as usize)))
             }
             _ => {}
         };
 
         match xor_parser(i) {
-            Ok((_, (addr1, addr2))) => {
+            Ok((_, (_, (addr1, addr2)))) => {
                 return Ok((i, Instruction::XOR(addr1 as usize, addr2 as usize)))
             }
             _ => {}
         };
 
         match inc_parser(i) {
-            Ok((_, addr)) => return Ok((i, Instruction::Inc(addr as usize))),
+            Ok((_, (_, addr))) => return Ok((i, Instruction::Inc(addr as usize))),
             _ => {}
         };
 
