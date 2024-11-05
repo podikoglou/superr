@@ -110,12 +110,16 @@ impl Optimizer for RandomSearchOptimizer {
     }
 
     fn work(&self) {
+        let mut vm = VM::default();
         let counter = self.state.counter.clone();
 
         while !self.should_stop() {
+            vm.reset();
+
             // generate a completely random program, and compute its state
             let program = self.generate_program();
-            let state = vm::VM::compute_state(&program);
+            vm.execute_program(&program);
+            let state = vm.state;
 
             // let's check if the state we just computed is equal to our target_state
             if self.state.target_state == state {
