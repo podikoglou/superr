@@ -1,7 +1,4 @@
-use std::{
-    io::{self, BufRead},
-    str::FromStr,
-};
+use std::io::{self, BufRead};
 
 use superr_optimizers::{
     optimizers::{
@@ -23,7 +20,7 @@ pub fn execute(args: OptimizeSubcommand) {
 
     for line in lines {
         match line {
-            Ok(v) => input.instructions.push(Instruction::from_str(&v).unwrap()),
+            Ok(v) => input.instructions.push(Instruction::from(v)),
             Err(_) => break,
         }
     }
