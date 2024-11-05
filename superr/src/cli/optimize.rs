@@ -25,6 +25,8 @@ pub fn execute(args: OptimizeSubcommand) {
         }
     }
 
+    let initial_len = input.instructions.len();
+
     println!("*** Input Program ***");
     print_program(&input);
     println!();
@@ -48,7 +50,7 @@ pub fn execute(args: OptimizeSubcommand) {
                     max_num: args.max_num,
                     // progress_frequency: args.progress_frequency,
                 },
-                input.clone(),
+                input,
             );
 
             output = optimizer.start_optimization();
@@ -61,7 +63,7 @@ pub fn execute(args: OptimizeSubcommand) {
                     max_instructions: args.max_instructions,
                     max_num: args.max_num,
                 },
-                input.clone(),
+                input,
             );
 
             output = optimizer.start_optimization();
@@ -72,7 +74,7 @@ pub fn execute(args: OptimizeSubcommand) {
     print_program(&output);
     println!();
 
-    println!("Input Program: {} Instructions", input.instructions.len());
+    println!("Input Program: {} Instructions", initial_len);
     println!("Output Program: {} Instructions", output.instructions.len())
 }
 
