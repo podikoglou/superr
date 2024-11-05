@@ -77,6 +77,11 @@ pub fn execute(args: OptimizeSubcommand) {
 }
 
 fn print_program(program: &Program) {
+    if program.instructions.len() > 20 {
+        println!("[Program too long to display]");
+        return;
+    }
+
     for instruction in &program.instructions {
         println!("{}", instruction.to_string());
     }
