@@ -37,7 +37,7 @@ impl VM {
             }
 
             Instruction::XOR(a, b) => {
-                self.state[a] = self.state[a] ^ self.state[b];
+                self.state[a] ^= self.state[b];
             }
 
             Instruction::Inc(addr) => {
