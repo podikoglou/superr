@@ -8,6 +8,9 @@ edition = "2021"
 [dependencies]
 superr_vm = { path = "../superr_vm/" }
 superr_optimizers = { path = "../superr_optimizers/" }
-rand = "0.8.5"
 argh = "0.1.12"
 num-format = "0.4.4"
+indicatif = "0.17.8"
+rayon = "1.10.0"
+ctrlc = "3.4.5"
+fastrand = "2.1.1"

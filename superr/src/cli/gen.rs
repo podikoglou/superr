@@ -1,18 +1,15 @@
-use rand::Rng;
 use superr_vm::{instruction::Instruction, vm};
 
 use super::GenSubcommand;
 
 pub fn execute(args: GenSubcommand) {
-    let mut rng = rand::thread_rng();
-
     for _ in 0..args.instructions {
-        let reg1 = rng.gen_range(0..vm::MEM_SIZE);
-        let reg2 = rng.gen_range(0..vm::MEM_SIZE);
+        let reg1 = fastrand::usize(0..vm::MEM_SIZE);
+        let reg2 = fastrand::usize(0..vm::MEM_SIZE);
 
-        let val = rng.gen_range(0..12);
-
-        let instruction = rng.gen_range(0..=3);
+        // TODO: cli args
+        let val = fastrand::usize(0..12);
+        let instruction = fastrand::usize(0..=3);
 
         let instruction = match instruction {
             0 => Instruction::Load(val),
