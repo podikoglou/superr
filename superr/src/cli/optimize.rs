@@ -39,11 +39,6 @@ pub fn execute(args: OptimizeSubcommand) {
     print_program(&program_in);
     println!();
 
-    // run the program just to find out what the target state is. we don't need this
-    // immediately, we only really use it for the output at the end. in fact,
-    // this is computed twice, once hre and once inside the optimize method.
-    //let target_state = VM::compute_state(&input);
-
     // run optimizer
     let program_out = optimize(program_in, &args);
     let length_out = program_out.instructions.len();
@@ -165,6 +160,11 @@ fn progress_loop(counter: Arc<AtomicU64>, should_stop: Arc<AtomicBool>) {
 }
 
 fn print_program(program: &Program) {
+    if program.instructions.len() > 20 {
+        println!("[Program too long to display]");
+        return;
+    }
+
     for instruction in &program.instructions {
         println!("{}", instruction.to_string());
     }
