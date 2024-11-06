@@ -21,7 +21,7 @@ use superr_vm::{
     vm::{State, MEM_SIZE, VM},
 };
 
-use crate::Optimizer;
+use super::Optimizer;
 
 const INSTRUCTIONS: [&'static str; 4] = ["LOAD", "SWAP", "XOR", "INC"];
 

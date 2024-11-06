@@ -1,11 +1,11 @@
 use std::io::{self, BufRead};
 
 use superr_optimizers::{
+    optimizers::Optimizer,
     optimizers::{
         exhaustive::{ExhaustiveOptimizer, ExhaustiveOptimizerOptions},
         random_search::{RandomSearchOptimizer, RandomSearchOptimizerOptions},
     },
-    Optimizer,
 };
 use superr_vm::{instruction::Instruction, program::Program, vm::VM};
 

@@ -17,7 +17,7 @@ use superr_vm::{
     vm::{self, State, VM},
 };
 
-use crate::Optimizer;
+use super::Optimizer;
 
 pub struct RandomSearchOptimizerState {
     pub optimal: Arc<RwLock<Program>>,
