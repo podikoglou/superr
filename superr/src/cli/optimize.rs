@@ -15,7 +15,11 @@ use rayon::ThreadPoolBuilder;
 use superr_optimizers::optimizers::{
     exhaustive::ExhaustiveOptimizer, random_search::RandomSearchOptimizer, Optimizer, OptimizerArgs,
 };
-use superr_vm::{instruction::Instruction, program::Program, vm::VM};
+use superr_vm::{
+    instruction::Instruction,
+    program::Program,
+    vm::{State, VM},
+};
 
 use crate::cli::OptimizerType;
 
@@ -34,22 +38,29 @@ pub fn execute(args: OptimizeSubcommand) {
     }
 
     let length_in = program_in.instructions.len();
+    let target = VM::compute_state(&program_in);
 
-    println!("*** Input Program ***");
+    eprintln!("*** Input Program ***");
     print_program(&program_in);
-    println!();
+    eprintln!();
+
+    eprintln!("*** Target ***");
+    print_state(&target);
+    eprintln!();
 
     // run optimizer
     let program_out = optimize(program_in, &args);
     let length_out = program_out.instructions.len();
 
     // print results
-    println!("*** Output Program ***");
-    print_program(&program_out);
-    println!();
+    eprintln!();
+    eprintln!();
+    eprintln!("*** Output Program ***");
+    print_program_stdout(&program_out);
+    eprintln!();
 
-    println!("Input Program: {} Instructions", length_in);
-    println!("Output Program: {} Instructions", length_out);
+    eprintln!("Input Program: {} Instructions", length_in);
+    eprintln!("Output Program: {} Instructions", length_out);
 }
 
 fn optimize(program: Program, args: &OptimizeSubcommand) -> Program {
@@ -161,11 +172,28 @@ fn progress_loop(counter: Arc<AtomicU64>, should_stop: Arc<AtomicBool>) {
 
 fn print_program(program: &Program) {
     if program.instructions.len() > 20 {
-        println!("[Program too long to display]");
+        eprintln!("[Program too long to display]");
         return;
     }
 
     for instruction in &program.instructions {
+        eprintln!("{}", instruction.to_string());
+    }
+}
+
+fn print_program_stdout(program: &Program) {
+    for instruction in &program.instructions {
         println!("{}", instruction.to_string());
     }
+}
+
+fn print_state(state: &State) {
+    eprintln!(
+        "[{}]",
+        state
+            .iter()
+            .map(|num| num.to_string())
+            .collect::<Vec<String>>()
+            .join(", ")
+    );
 }
