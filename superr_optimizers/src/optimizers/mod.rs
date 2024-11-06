@@ -1,19 +1,48 @@
-use superr_vm::program::Program;
+use std::sync::{
+    atomic::{AtomicBool, AtomicU64},
+    Arc, RwLock,
+};
+
+use rayon::Scope;
+use superr_vm::{program::Program, vm::State};
 
 pub mod exhaustive;
 pub mod random_search;
 
+pub struct OptimizerArgs {
+    /// Target state which we want our program to have.
+    pub target: State,
+
+    /// Length of the program we're trying to optimize.
+    pub length: usize,
+
+    /// Largest possible number that can appear in instructions such as LOAD.
+    pub max_num: usize,
+
+    /// Max amount of instructions a program should have. Typically our
+    /// original program's length minus 1.
+    pub max_instructions: usize,
+
+    /// Container for our most optimal program.
+    ///
+    /// NOTE: We could have a history rather than storing a single
+    /// optimal program and discarding the others.
+    pub optimal: Arc<RwLock<Program>>,
+
+    /// Counter for the amount of programs checked.
+    ///
+    /// This is used for the progress bar and other statistics.
+    pub counter: Arc<AtomicU64>,
+
+    /// Switch for stopping the optimization process.
+    ///
+    /// This is used for the interface.
+    pub should_stop: Arc<AtomicBool>,
+}
+
 pub trait Optimizer {
-    /// The options of the program, such as the biggest value an instruction
-    /// operand can be, max instructions a program can have, etc.
-    type Options;
-
-    /// The state of the program, holding things such as the optimal program, whether
-    /// to stop, programs checked, etc.
-    type State;
-
     /// Creates a new instance of the Optimizer.
-    fn new(options: Self::Options, program: Program) -> Self;
+    fn new(args: OptimizerArgs) -> Self;
 
     /// Starts the optimization process.
     ///
@@ -25,14 +54,7 @@ pub trait Optimizer {
     /// the threads are stopped.
     ///
     /// Returns the program using [`Optimizer::optimal`] when finished.
-    fn start_optimization(&mut self) -> Program;
-
-    /// Gets the optimal version of the program.
-    ///
-    /// When the superoptimizer is created, the variable behind this is initialized
-    /// with the initially given program, so if no optimal program was found,
-    /// the given program is returned, thus not needing to return an [Option]
-    fn optimal(&mut self) -> Program;
+    fn start_optimization<'a>(&'a mut self, scope: &Scope<'a>);
 
     /// Returns the length of the optimal program. 'current' refers to the fact that
     /// we're not necessarily returning the optimal length of the program, but the
@@ -49,11 +71,5 @@ pub trait Optimizer {
 
     /// Runs the worker loop, constantly generating and checking
     /// programs until it finds an optimal program.
-    fn work(&self);
-
-    /// Runs the progress loop, constantly updating the progress bar.
-    ///
-    /// TODO: Figure out a universal way to have a progress bar
-    /// without needing to write a new one for each optimizer?
-    fn progress_loop(&self);
+    fn worker_loop(&self);
 }
