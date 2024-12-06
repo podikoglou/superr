@@ -1,24 +1,36 @@
-use superr_vm::{instruction::Instruction, vm};
+use std::io::Write;
+
+use superr_vm::{
+    instruction::{new_inc, new_load, new_swap, new_xor},
+    program::Program,
+    vm,
+};
 
 use super::GenSubcommand;
 
 pub fn execute(args: GenSubcommand) {
-    for _ in 0..args.instructions {
-        let reg1 = fastrand::usize(0..vm::MEM_SIZE);
-        let reg2 = fastrand::usize(0..vm::MEM_SIZE);
+    let mut program = Program::new();
 
-        // TODO: cli args
-        let val = fastrand::usize(0..12);
-        let instruction = fastrand::usize(0..=3);
+    for _ in 0..args.instructions {
+        // NOTE: this is unsafe (converting usize to u8)
+        let reg1 = fastrand::u8(0..vm::MEM_SIZE as u8);
+        let reg2 = fastrand::u8(0..vm::MEM_SIZE as u8);
+
+        let val = fastrand::u8(0..=args.instructions as u8);
+
+        let instruction = fastrand::u8(0..=3);
 
         let instruction = match instruction {
-            0 => Instruction::Load(val),
-            1 => Instruction::Swap(reg1, reg2),
-            2 => Instruction::XOR(reg1, reg2),
-            3 => Instruction::Inc(reg1),
+            0 => new_load(val),
+            1 => new_swap(reg1, reg2),
+            2 => new_xor(reg1, reg2),
+            3 => new_inc(reg1),
             _ => panic!("SUPER unexpected error occurred"),
         };
-
-        println!("{}", instruction.to_string());
+        program.instructions.push(instruction);
     }
+
+    let output: Vec<u8> = program.into();
+
+    std::io::stdout().write_all(&output).unwrap()
 }

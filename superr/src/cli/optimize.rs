@@ -1,5 +1,5 @@
 use std::{
-    io::{self, BufRead},
+    io::{self, BufReader, Read},
     mem,
     sync::{
         atomic::{AtomicBool, AtomicU64, Ordering},
@@ -16,7 +16,6 @@ use superr_optimizers::optimizers::{
     exhaustive::ExhaustiveOptimizer, random_search::RandomSearchOptimizer, Optimizer, OptimizerArgs,
 };
 use superr_vm::{
-    instruction::Instruction,
     program::Program,
     vm::{State, VM},
 };
@@ -26,18 +25,29 @@ use crate::cli::OptimizerType;
 use super::OptimizeSubcommand;
 
 pub fn execute(args: OptimizeSubcommand) {
-    // read program from stdin
     let mut program_in = Program::new();
-    let lines = io::stdin().lock().lines();
 
-    for line in lines {
-        match line {
-            Ok(v) => program_in.instructions.push(Instruction::from(v)),
+    let stdin = io::stdin().lock();
+    let mut reader = BufReader::new(stdin);
+
+    let mut buf: [u8; 4] = [0; 4];
+
+    // read length of program
+    let _ = reader.read(&mut buf);
+    let length_in = u32::from_be_bytes(buf);
+
+    for _ in 0..length_in {
+        match reader.read(&mut buf) {
+            Ok(_) => {}
             Err(_) => break,
-        }
+        };
+
+        let instruction = u32::from_be_bytes(buf);
+
+        program_in.instructions.push(instruction);
     }
 
-    let length_in = program_in.instructions.len();
+    //let length_in = program_in.instructions.len();
     let target = VM::compute_state(&program_in);
 
     eprintln!("*** Input Program ***");

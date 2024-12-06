@@ -1,86 +1,36 @@
 use crate::address::MemoryAddress;
 
-#[derive(Debug, Clone, PartialEq, PartialOrd, Copy, Eq, Hash)]
-pub enum Instruction {
-    Load(usize),
-    Swap(MemoryAddress, MemoryAddress),
-    XOR(MemoryAddress, MemoryAddress),
-    Inc(MemoryAddress),
+pub type Instruction = u32;
+
+pub const LOAD: u8 = 0x01;
+pub const SWAP: u8 = 0x02;
+pub const XOR: u8 = 0x03;
+pub const INC: u8 = 0x04;
+
+pub fn new_load(value: u8) -> u32 {
+    ((LOAD as u32) << 28) | (value as u32)
 }
 
-impl ToString for Instruction {
-    fn to_string(&self) -> String {
-        match self {
-            Instruction::Load(a) => format!("LOAD {}", a),
-            Instruction::Swap(a, b) => format!("SWAP {} {}", a, b),
-            Instruction::XOR(a, b) => format!("XOR {} {}", a, b),
-            Instruction::Inc(a) => format!("INC {}", a),
-        }
-    }
+pub fn new_swap(a: u8, b: u8) -> u32 {
+    ((SWAP as u32) << 28) | ((a as u32) << 8) | b as u32
 }
 
-mod parsers {
-    use nom::{
-        bytes::complete::tag,
-        character::complete::{space0, u8},
-        sequence::separated_pair,
-        Err, IResult,
-    };
-
-    use super::Instruction;
-
-    fn load_parser(i: &str) -> IResult<&str, (&str, u8)> {
-        separated_pair(tag("LOAD"), space0, u8)(i)
-    }
-
-    fn swap_parser(i: &str) -> IResult<&str, (&str, (u8, u8))> {
-        separated_pair(tag("SWAP"), space0, separated_pair(u8, space0, u8))(i)
-    }
-
-    fn xor_parser(i: &str) -> IResult<&str, (&str, (u8, u8))> {
-        separated_pair(tag("XOR"), space0, separated_pair(u8, space0, u8))(i)
-    }
-
-    fn inc_parser(i: &str) -> IResult<&str, (&str, u8)> {
-        separated_pair(tag("INC"), space0, u8)(i)
-    }
-
-    pub fn instruction_parser(i: &str) -> IResult<&str, Instruction> {
-        match load_parser(i) {
-            Ok((_, (_, val))) => return Ok((i, Instruction::Load(val as usize))),
-            _ => {}
-        }
-
-        match swap_parser(i) {
-            Ok((_, (_, (addr1, addr2)))) => {
-                return Ok((i, Instruction::Swap(addr1 as usize, addr2 as usize)))
-            }
-            _ => {}
-        };
-
-        match xor_parser(i) {
-            Ok((_, (_, (addr1, addr2)))) => {
-                return Ok((i, Instruction::XOR(addr1 as usize, addr2 as usize)))
-            }
-            _ => {}
-        };
-
-        match inc_parser(i) {
-            Ok((_, (_, addr))) => return Ok((i, Instruction::Inc(addr as usize))),
-            _ => {}
-        };
-
-        Err(Err::Failure(nom::error::make_error(
-            i,
-            nom::error::ErrorKind::Alt,
-        )))
-    }
+pub fn new_xor(a: MemoryAddress, b: MemoryAddress) -> u32 {
+    ((XOR as u32) << 28) | ((a as u32) << 8) | b as u32
 }
 
-impl From<String> for Instruction {
-    fn from(value: String) -> Self {
-        let (_, instruction) = parsers::instruction_parser(&value).expect("invalid instruction");
+pub fn new_inc(a: u8) -> u32 {
+    ((INC as u32) << 28) | (a as u32)
+}
 
-        instruction
-    }
+pub fn decode_opcode(instruction: Instruction) -> u8 {
+    (instruction >> 28) as u8
+}
+
+pub fn decode_op1(instruction: Instruction) -> u8 {
+    ((instruction >> 8) & 0xFF) as u8
+}
+
+pub fn decode_op2(instruction: Instruction) -> u8 {
+    (instruction & 0xFF) as u8
 }

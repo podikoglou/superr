@@ -1,8 +1,11 @@
-use crate::{instruction::Instruction, program::Program};
+use crate::{
+    instruction::{decode_op1, decode_op2, decode_opcode, Instruction, INC, LOAD, SWAP, XOR},
+    program::Program,
+};
 
 pub const MEM_SIZE: usize = 12;
 
-pub type State = [usize; MEM_SIZE];
+pub type State = [u8; MEM_SIZE];
 
 #[derive(Debug, Default)]
 pub struct VM {
@@ -19,31 +22,41 @@ impl VM {
     #[inline(always)]
     pub fn execute_program(&mut self, program: &Program) {
         for instruction in &program.instructions {
-            self.execute(&instruction);
+            self.execute(*instruction);
         }
     }
 
     #[inline(always)]
-    pub fn execute(&mut self, instruction: &Instruction) {
+    pub fn execute(&mut self, instruction: Instruction) {
         self.pc += 1;
 
-        match *instruction {
-            Instruction::Load(val) => {
+        let opcode = decode_opcode(instruction);
+
+        match opcode {
+            LOAD => {
+                let val = decode_op2(instruction);
+
                 self.state[0] = val;
             }
+            SWAP => {
+                let a = decode_op1(instruction);
+                let b = decode_op2(instruction);
 
-            Instruction::Swap(a, b) => {
-                self.state.swap(a, b);
+                self.state.swap(a as usize, b as usize);
             }
+            XOR => {
+                let a = decode_op1(instruction);
+                let b = decode_op2(instruction);
 
-            Instruction::XOR(a, b) => {
-                self.state[a] ^= self.state[b];
+                self.state[a as usize] ^= self.state[b as usize];
             }
+            INC => {
+                let addr = decode_op2(instruction);
 
-            Instruction::Inc(addr) => {
-                self.state[addr] += 1;
+                self.state[addr as usize] += 1;
             }
-        }
+            _ => {}
+        };
     }
 
     #[inline(always)]

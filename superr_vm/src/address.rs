@@ -1,1 +1,1 @@
-pub type MemoryAddress = usize;
+pub type MemoryAddress = u8;

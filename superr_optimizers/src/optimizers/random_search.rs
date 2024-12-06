@@ -2,7 +2,7 @@ use std::{mem, sync::atomic::Ordering};
 
 use rayon::Scope;
 use superr_vm::{
-    instruction::Instruction,
+    instruction::{new_inc, new_load, new_swap, new_xor},
     program::Program,
     vm::{self, VM},
 };
@@ -89,18 +89,19 @@ impl RandomSearchOptimizer {
 
         // generate the instructions of the program
         for _ in 0..instructions_amount {
-            let reg1 = fastrand::usize(0..vm::MEM_SIZE);
-            let reg2 = fastrand::usize(0..vm::MEM_SIZE);
+            // NOTE: this is unsafe (converting usize to u8)
+            let reg1 = fastrand::u8(0..vm::MEM_SIZE as u8);
+            let reg2 = fastrand::u8(0..vm::MEM_SIZE as u8);
 
-            let val = fastrand::usize(0..self.args.max_num);
+            let val = fastrand::u8(0..self.args.max_num as u8);
 
-            let instruction = fastrand::usize(0..=3);
+            let instruction = fastrand::u8(0..=3);
 
             let instruction = match instruction {
-                0 => Instruction::Load(val),
-                1 => Instruction::Swap(reg1, reg2),
-                2 => Instruction::XOR(reg1, reg2),
-                3 => Instruction::Inc(reg1),
+                0 => new_load(val),
+                1 => new_swap(reg1, reg2),
+                2 => new_xor(reg1, reg2),
+                3 => new_inc(reg1),
                 _ => panic!("SUPER unexpected error occurred"),
             };
             program.instructions.push(instruction);

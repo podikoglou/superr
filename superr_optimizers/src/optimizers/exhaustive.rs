@@ -6,7 +6,7 @@ use rayon::{
 };
 use std::{mem, sync::atomic::Ordering};
 use superr_vm::{
-    instruction::Instruction,
+    instruction::{new_inc, new_load, new_swap, new_xor, Instruction},
     program::Program,
     vm::{MEM_SIZE, VM},
 };
@@ -110,27 +110,29 @@ impl ExhaustiveOptimizer {
         })
     }
 
-    fn gen_arg_sets(&self, instruction: &str) -> Vec<[usize; 2]> {
+    fn gen_arg_sets(&self, instruction: &str) -> Vec<[u8; 2]> {
         match instruction {
-            "LOAD" => (0..=self.args.max_num).map(|val| [val, 0]).collect_vec(),
+            "LOAD" => (0..=self.args.max_num as u8)
+                .map(|val| [val, 0])
+                .collect_vec(),
 
-            "SWAP" | "XOR" => (0..MEM_SIZE)
+            "SWAP" | "XOR" => (0..MEM_SIZE as u8)
                 .cartesian_product(0..MEM_SIZE)
-                .map(|(a, b)| [a, b])
+                .map(|(a, b)| [a, b as u8])
                 .collect(),
 
-            "INC" => (0..MEM_SIZE).map(|val| [val, 0]).collect(),
+            "INC" => (0..MEM_SIZE as u8).map(|val| [val, 0]).collect(),
 
             _ => panic!("Unknown instruction: {}", instruction),
         }
     }
 
-    fn create_instruction(&self, inst: &str, args: [usize; 2]) -> Instruction {
+    fn create_instruction(&self, inst: &str, args: [u8; 2]) -> Instruction {
         match inst {
-            "LOAD" => Instruction::Load(args[0]),
-            "SWAP" => Instruction::Swap(args[0], args[1]),
-            "XOR" => Instruction::XOR(args[0], args[1]),
-            "INC" => Instruction::Inc(args[0]),
+            "LOAD" => new_load(args[0]),
+            "SWAP" => new_swap(args[0], args[1]),
+            "XOR" => new_xor(args[0], args[1]),
+            "INC" => new_inc(args[0]),
 
             _ => panic!("Unknown instruction: {}", inst),
         }
