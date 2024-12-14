@@ -6,6 +6,7 @@ use std::sync::{
 use rayon::Scope;
 use superr_vm::{program::Program, vm::State};
 
+pub mod diffing;
 pub mod exhaustive;
 pub mod random_search;
 
