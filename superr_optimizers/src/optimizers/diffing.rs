@@ -3,8 +3,7 @@ use std::{mem, sync::atomic::Ordering};
 use rayon::Scope;
 use superr_vm::{
     instruction::Instruction,
-    program::Program,
-    vm::{self, VM},
+    vm::{self, State, VM},
 };
 
 use super::{Optimizer, OptimizerArgs};
@@ -42,33 +41,40 @@ impl Optimizer for DiffingOptimizer {
 
         let counter = self.args.counter.clone();
 
+        // start with an empty program
+        //let mut current_program = Program::new();
+        let mut current_score = DiffingOptimizer::score(&vm.state, &self.args.target);
+
         while !self.should_stop() {
             vm.reset();
 
-            // generate a completely random program, and compute its state
-            let program = self.generate_program();
-            vm.execute_program(&program);
+            // TODO: can this be simplified?
+            let mut new_program = self.args.optimal.read().unwrap().clone();
 
-            let state = vm.state;
+            new_program.instructions.push(self.generate_instruction());
+            vm.execute_program(&new_program);
 
-            // let's check if the state we just computed is equal to our target_state
-            if self.args.target == state {
-                // we now need to check if this program is shorter than the given program
-                // (there is a chance that it's not, depending on the options)
-                if program.instructions.len() < self.current_optimal_length() {
-                    // since the program we found is more efficient, we update the optimal
-                    // program to be the one we just found.
+            let new_score = DiffingOptimizer::score(&vm.state, &self.args.target);
 
-                    eprintln!(
-                        "Found more optimal program ({} instructions)",
-                        program.instructions.len()
-                    );
+            if current_score > new_score
+                && new_program.instructions.len() < self.current_optimal_length()
+            {
+                // update optimal program
+                eprintln!(
+                    "Found more optimal program ({} instructions)",
+                    new_program.instructions.len()
+                );
 
-                    {
-                        let mut lock = self.args.optimal.write().unwrap();
+                {
+                    let mut lock = self.args.optimal.write().unwrap();
 
-                        let _ = mem::replace(&mut *lock, program);
-                    }
+                    let _ = mem::replace(&mut *lock, new_program);
+                }
+
+                current_score = new_score;
+
+                if new_score == 0.0 {
+                    self.should_stop();
                 }
             }
 
@@ -79,33 +85,34 @@ impl Optimizer for DiffingOptimizer {
 }
 
 impl DiffingOptimizer {
-    /// Randomly generates a program based on the [`DiffingOptimizerOptions`].
-    fn generate_program(&self) -> Program {
-        let mut program = Program::new();
+    /// Randomly generates a single instruction based on the [`DiffingOptimizerOptions`].
+    fn generate_instruction(&self) -> Instruction {
+        let reg1 = fastrand::usize(0..vm::MEM_SIZE);
+        let reg2 = fastrand::usize(0..vm::MEM_SIZE);
 
-        // generate a random amount of instructions for the program to have. this amount is
-        // within 0 and the given max_instructions.
-        let instructions_amount = fastrand::usize(0..=self.args.max_instructions);
+        let val = fastrand::usize(0..self.args.max_num);
 
-        // generate the instructions of the program
-        for _ in 0..instructions_amount {
-            let reg1 = fastrand::usize(0..vm::MEM_SIZE);
-            let reg2 = fastrand::usize(0..vm::MEM_SIZE);
+        let instruction = fastrand::usize(0..=3);
 
-            let val = fastrand::usize(0..self.args.max_num);
+        let instruction = match instruction {
+            0 => Instruction::Load(val),
+            1 => Instruction::Swap(reg1, reg2),
+            2 => Instruction::XOR(reg1, reg2),
+            3 => Instruction::Inc(reg1),
+            _ => panic!("SUPER unexpected error occurred"),
+        };
 
-            let instruction = fastrand::usize(0..=3);
+        instruction
+    }
 
-            let instruction = match instruction {
-                0 => Instruction::Load(val),
-                1 => Instruction::Swap(reg1, reg2),
-                2 => Instruction::XOR(reg1, reg2),
-                3 => Instruction::Inc(reg1),
-                _ => panic!("SUPER unexpected error occurred"),
-            };
-            program.instructions.push(instruction);
-        }
-
-        program
+    /// Euclidean distance.
+    ///
+    /// Developer Note: Maybe apply penalty based on length?
+    fn score(a: &State, b: &State) -> f32 {
+        a.iter()
+            .zip(b)
+            .map(|(&a, &b)| (a as f32 - b as f32).powi(2))
+            .sum::<f32>()
+            .sqrt()
     }
 }
