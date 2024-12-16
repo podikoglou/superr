@@ -26,28 +26,38 @@ impl VM {
             match self.program.instructions[self.pc] {
                 Instruction::Load(val) => {
                     self.state[0] = val;
+
+                    self.pc += 1;
                 }
 
                 Instruction::Swap(a, b) => {
                     self.state.swap(a, b);
+
+                    self.pc += 1;
                 }
 
                 Instruction::XOR(a, b) => {
                     self.state[a] ^= self.state[b];
+
+                    self.pc += 1;
                 }
 
                 Instruction::Inc(addr) => {
                     self.state[addr] += 1;
+
+                    self.pc += 1;
                 }
 
                 Instruction::Put(addr) => {
                     // TODO: custom writer which may or may not be stdout, so we can handle
                     // optimization without having to constantly print out
                     println!("{}", self.state[addr]);
-                }
-            }
 
-            self.pc += 1;
+                    self.pc += 1;
+                }
+
+                Instruction::Jmp(ins) => self.pc = ins,
+            }
         }
 
         self.program = Program::default();

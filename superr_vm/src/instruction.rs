@@ -7,6 +7,7 @@ pub enum Instruction {
     XOR(MemoryAddress, MemoryAddress),
     Inc(MemoryAddress),
     Put(MemoryAddress),
+    Jmp(usize),
 }
 
 impl ToString for Instruction {
@@ -17,6 +18,7 @@ impl ToString for Instruction {
             Instruction::XOR(a, b) => format!("XOR {} {}", a, b),
             Instruction::Inc(a) => format!("INC {}", a),
             Instruction::Put(a) => format!("PUT {}", a),
+            Instruction::Jmp(a) => format!("JMP {}", a),
         }
     }
 }
@@ -51,6 +53,10 @@ mod parsers {
         separated_pair(tag("PUT"), space0, u8)(i)
     }
 
+    fn jmp_parser(i: &str) -> IResult<&str, (&str, u8)> {
+        separated_pair(tag("JMP"), space0, u8)(i)
+    }
+
     pub fn instruction_parser(i: &str) -> IResult<&str, Instruction> {
         match load_parser(i) {
             Ok((_, (_, val))) => return Ok((i, Instruction::Load(val as usize))),
@@ -78,6 +84,11 @@ mod parsers {
 
         match put_parser(i) {
             Ok((_, (_, addr))) => return Ok((i, Instruction::Put(addr as usize))),
+            _ => {}
+        };
+
+        match jmp_parser(i) {
+            Ok((_, (_, ins))) => return Ok((i, Instruction::Jmp(ins as usize))),
             _ => {}
         };
 
