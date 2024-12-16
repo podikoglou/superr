@@ -89,7 +89,7 @@ impl RandomSearchOptimizer {
 
         // generate the instructions of the program
         for _ in 0..instructions_amount {
-            let instruction = fastrand::usize(0..=3);
+            let instruction = fastrand::usize(0..=5);
 
             let instruction = match instruction {
                 0 => {
@@ -110,10 +110,16 @@ impl RandomSearchOptimizer {
                     }
                 }
 
-                3 => {
+                3 | 4 | 5 => {
                     let addr = fastrand::usize(0..vm::MEM_SIZE);
 
-                    Instruction::Load(addr)
+                    match instruction {
+                        3 => Instruction::Load(addr),
+                        4 => Instruction::Put(addr),
+                        5 => Instruction::Jmp(addr),
+
+                        _ => panic!("SUPER unexpected error occurred"),
+                    }
                 }
 
                 _ => panic!("SUPER unexpected error occurred"),

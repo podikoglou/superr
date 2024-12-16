@@ -97,7 +97,7 @@ impl ExhaustiveOptimizer {
                 .flat_map(move |inst_combo| {
                     inst_combo
                         .iter()
-                        .map(|&inst| self.gen_arg_sets(inst))
+                        .map(|&inst| self.gen_arg_sets(inst, length))
                         .multi_cartesian_product()
                         .map(move |args| Program {
                             instructions: inst_combo
@@ -110,7 +110,7 @@ impl ExhaustiveOptimizer {
         })
     }
 
-    fn gen_arg_sets(&self, instruction: &str) -> Vec<[usize; 2]> {
+    fn gen_arg_sets(&self, instruction: &str, length: usize) -> Vec<[usize; 2]> {
         match instruction {
             "LOAD" => (0..=self.args.max_num).map(|val| [val, 0]).collect_vec(),
 
@@ -120,6 +120,8 @@ impl ExhaustiveOptimizer {
                 .collect(),
 
             "INC" => (0..MEM_SIZE).map(|val| [val, 0]).collect(),
+            "PUT" => (0..MEM_SIZE).map(|val| [val, 0]).collect(),
+            "JMP" => (0..length).map(|val| [val, 0]).collect(),
 
             _ => panic!("Unknown instruction: {}", instruction),
         }
@@ -131,6 +133,8 @@ impl ExhaustiveOptimizer {
             "SWAP" => Instruction::Swap(args[0], args[1]),
             "XOR" => Instruction::XOR(args[0], args[1]),
             "INC" => Instruction::Inc(args[0]),
+            "PUT" => Instruction::Put(args[0]),
+            "JMP" => Instruction::Jmp(args[0]),
 
             _ => panic!("Unknown instruction: {}", inst),
         }

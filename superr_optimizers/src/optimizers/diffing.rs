@@ -87,7 +87,7 @@ impl Optimizer for DiffingOptimizer {
 impl DiffingOptimizer {
     /// Randomly generates a single instruction based on the [`DiffingOptimizerOptions`].
     fn generate_instruction(&self) -> Instruction {
-        let instruction = fastrand::usize(0..=3);
+        let instruction = fastrand::usize(0..=5);
 
         match instruction {
             0 => {
@@ -108,10 +108,16 @@ impl DiffingOptimizer {
                 }
             }
 
-            3 => {
+            3 | 4 | 5 => {
                 let addr = fastrand::usize(0..vm::MEM_SIZE);
 
-                Instruction::Load(addr)
+                match instruction {
+                    3 => Instruction::Load(addr),
+                    4 => Instruction::Put(addr),
+                    5 => Instruction::Jmp(addr),
+
+                    _ => panic!("SUPER unexpected error occurred"),
+                }
             }
 
             _ => panic!("SUPER unexpected error occurred"),

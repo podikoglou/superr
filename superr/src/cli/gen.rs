@@ -9,13 +9,15 @@ pub fn execute(args: GenSubcommand) {
 
         // TODO: cli args
         let val = fastrand::usize(0..12);
-        let instruction = fastrand::usize(0..=3);
+        let instruction = fastrand::usize(0..=5);
 
         let instruction = match instruction {
             0 => Instruction::Load(val),
             1 => Instruction::Swap(reg1, reg2),
             2 => Instruction::XOR(reg1, reg2),
             3 => Instruction::Inc(reg1),
+            4 => Instruction::Put(reg1),
+            5 => Instruction::Jmp(reg1),
             _ => panic!("SUPER unexpected error occurred"),
         };
 
