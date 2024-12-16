@@ -33,7 +33,11 @@ pub fn execute(args: OptimizeSubcommand) {
 
     for line in lines {
         match line {
-            Ok(v) => program_in.instructions.push(Instruction::from(v)),
+            Ok(v) => {
+                if !v.is_empty() {
+                    program_in.instructions.push(Instruction::from(v))
+                }
+            }
             Err(_) => break,
         }
     }
