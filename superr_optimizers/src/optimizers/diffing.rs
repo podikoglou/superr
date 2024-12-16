@@ -52,7 +52,7 @@ impl Optimizer for DiffingOptimizer {
             let mut new_program = self.args.optimal.read().unwrap().clone();
 
             new_program.instructions.push(self.generate_instruction());
-            vm.execute_program(&new_program);
+            vm.execute_program(new_program.clone());
 
             let new_score = DiffingOptimizer::score(&vm.state, &self.args.target);
 

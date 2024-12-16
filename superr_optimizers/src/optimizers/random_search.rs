@@ -47,7 +47,7 @@ impl Optimizer for RandomSearchOptimizer {
 
             // generate a completely random program, and compute its state
             let program = self.generate_program();
-            vm.execute_program(&program);
+            vm.execute_program(program.clone());
 
             let state = vm.state;
 

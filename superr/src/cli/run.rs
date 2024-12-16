@@ -19,7 +19,7 @@ pub fn execute(_: RunSubcommand) {
     // create vm
     let mut vm = VM::default();
 
-    vm.execute_program(&program);
+    vm.execute_program(program);
 
     dbg!(vm);
 }
