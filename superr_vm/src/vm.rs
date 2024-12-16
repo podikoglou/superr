@@ -43,6 +43,12 @@ impl VM {
             Instruction::Inc(addr) => {
                 self.state[addr] += 1;
             }
+
+            Instruction::Put(addr) => {
+                // TODO: custom writer which may or may not be stdout, so we can handle
+                // optimization without having to constantly print out
+                println!("{}", self.state[addr]);
+            }
         }
     }
 
