@@ -85,7 +85,18 @@ impl RandomSearchOptimizer {
 
         // generate a random amount of instructions for the program to have. this amount is
         // within 0 and the given max_instructions.
-        let instructions_amount = fastrand::usize(0..=self.args.max_instructions);
+        let instructions_amount = fastrand::usize(
+            0..={
+                let max = self.args.max_instructions;
+                let optimal = self.current_optimal_length();
+
+                if max > optimal {
+                    optimal - 1
+                } else {
+                    max
+                }
+            },
+        );
 
         // generate the instructions of the program
         for _ in 0..instructions_amount {
