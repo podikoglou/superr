@@ -13,7 +13,8 @@ use indicatif::{ProgressBar, ProgressStyle};
 use num_format::{Locale, ToFormattedString};
 use rayon::ThreadPoolBuilder;
 use superr_optimizers::optimizers::{
-    exhaustive::ExhaustiveOptimizer, random_search::RandomSearchOptimizer, Optimizer, OptimizerArgs,
+    exhaustive::ExhaustiveOptimizer, ga::GeneticOptimizer, random_search::RandomSearchOptimizer,
+    Optimizer, OptimizerArgs,
 };
 use superr_vm::{
     instruction::Instruction,
@@ -117,6 +118,17 @@ fn optimize(program: Program, args: &OptimizeSubcommand) -> Program {
         OptimizerType::Exhaustive => {
             // initialize optimizer
             let mut optimizer = ExhaustiveOptimizer::new(optimizer_args);
+
+            // start threads
+            thread_pool.scope(|scope| {
+                optimizer.start_optimization(&scope);
+            });
+        }
+
+        // ga
+        OptimizerType::Genetic => {
+            // initialize optimizer
+            let mut optimizer = GeneticOptimizer::new(optimizer_args);
 
             // start threads
             thread_pool.scope(|scope| {

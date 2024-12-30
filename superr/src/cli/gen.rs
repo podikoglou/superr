@@ -11,6 +11,8 @@ pub fn execute(args: GenSubcommand) {
         let val = fastrand::usize(0..12);
         let instruction = fastrand::usize(0..=3);
 
+        
+
         let instruction = match instruction {
             0 => Instruction::Load(val),
             1 => Instruction::Swap(reg1, reg2),

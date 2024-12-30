@@ -54,6 +54,7 @@ pub struct OptimizeSubcommand {
 pub enum OptimizerType {
     RandomSearch,
     Exhaustive,
+    Genetic,
 }
 
 impl FromArgValue for OptimizerType {
@@ -61,6 +62,7 @@ impl FromArgValue for OptimizerType {
         match value {
             "random" | "random-search" | "random_search" => Ok(Self::RandomSearch),
             "exhaustive" => Ok(Self::Exhaustive),
+            "ga" | "genetic" => Ok(Self::Genetic),
             _ => Err("invalid optimizer".to_string()),
         }
     }
