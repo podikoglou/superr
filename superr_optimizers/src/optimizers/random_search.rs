@@ -1,4 +1,7 @@
-use std::{mem, sync::atomic::Ordering};
+use std::{
+    mem,
+    sync::atomic::{AtomicUsize, Ordering},
+};
 
 use rayon::Scope;
 use superr_vm::{
@@ -11,11 +14,15 @@ use super::{Optimizer, OptimizerArgs};
 
 pub struct RandomSearchOptimizer {
     pub args: OptimizerArgs,
+    pub max_instructions: AtomicUsize,
 }
 
 impl Optimizer for RandomSearchOptimizer {
     fn new(args: OptimizerArgs) -> Self {
-        Self { args }
+        Self {
+            max_instructions: AtomicUsize::new(args.max_instructions),
+            args,
+        }
     }
 
     fn start_optimization<'a>(&'a mut self, scope: &Scope<'a>) {
@@ -59,16 +66,19 @@ impl Optimizer for RandomSearchOptimizer {
                     // since the program we found is more efficient, we update the optimal
                     // program to be the one we just found.
 
-                    eprintln!(
-                        "Found more optimal program ({} instructions)",
-                        program.instructions.len()
-                    );
+                    let new_len = program.instructions.len();
+
+                    eprintln!("Found more optimal program ({} instructions)", new_len);
 
                     {
                         let mut lock = self.args.optimal.write().unwrap();
 
                         let _ = mem::replace(&mut *lock, program);
                     }
+
+                    // update max_instructions so we can look for programs even
+                    // shorter than what we just found
+                    self.max_instructions.store(new_len - 1, Ordering::Relaxed);
                 }
             }
 
@@ -85,7 +95,8 @@ impl RandomSearchOptimizer {
 
         // generate a random amount of instructions for the program to have. this amount is
         // within 0 and the given max_instructions.
-        let instructions_amount = fastrand::usize(0..=self.args.max_instructions);
+        let max_instructions = self.max_instructions.load(Ordering::Relaxed);
+        let instructions_amount = fastrand::usize(0..=max_instructions);
 
         // generate the instructions of the program
         for _ in 0..instructions_amount {
