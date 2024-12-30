@@ -124,7 +124,7 @@ impl RandomSearchOptimizer {
                 3 => {
                     let addr = fastrand::usize(0..vm::MEM_SIZE);
 
-                    Instruction::Load(addr)
+                    Instruction::Jmp(addr)
                 }
 
                 _ => panic!("SUPER unexpected error occurred"),
@@ -133,6 +133,64 @@ impl RandomSearchOptimizer {
             program.instructions.push(instruction);
         }
 
-        program
+        if Self::is_legal(&program) {
+            program
+        } else {
+            self.generate_program()
+        }
+    }
+
+    /// Simple filter to filter out programs which cannot possibly be optimal.
+    ///
+    /// In some cases, this may simply not be worth running (if there aren't
+    /// that many instructions in the given program).
+    fn is_legal(program: &Program) -> bool {
+        let mut previous: Option<&Instruction> = None;
+
+        for (idx, instruction) in program.instructions.iter().enumerate() {
+            previous = Some(instruction);
+
+            if let Some(previous) = previous {
+                match previous {
+                    Instruction::Load(_) => {
+                        // if the previous instruction and the current
+                        // instruction were both LOAD instructions, filter them out
+                        //
+                        // (the second LOAD overwrites the value of the first)
+                        if let Instruction::Load(_) = instruction {
+                            return false;
+                        }
+                    }
+                    Instruction::Swap(a1, b1) | Instruction::XOR(a1, b1) => {
+                        if let Instruction::Swap(a2, b2) | Instruction::XOR(a2, b2) = instruction {
+                            if (a1 == a2 && b1 == b2)
+                                || (a1 == b2 && b1 == a2)
+                                || a1 == a2
+                                || a1 == b2
+                                || b1 == a2
+                                || b1 == b2
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    Instruction::Jmp(line) => {
+                        // 1. Does this instruction even exist?
+                        if program.instructions.len() <= *line {
+                            return false;
+                        }
+
+                        // 2. Is this instruction the same we're on right now?
+                        if *line == idx {
+                            return false;
+                        }
+                    }
+
+                    _ => {}
+                }
+            }
+        }
+
+        true
     }
 }
