@@ -4,11 +4,9 @@ use std::{
 };
 
 use rayon::Scope;
-use superr_vm::{
-    instruction::Instruction,
-    program::Program,
-    vm::{self, VM},
-};
+use superr_vm::{program::Program, vm::VM};
+
+use crate::generate_instruction;
 
 use super::{Optimizer, OptimizerArgs};
 
@@ -100,37 +98,9 @@ impl RandomSearchOptimizer {
 
         // generate the instructions of the program
         for _ in 0..instructions_amount {
-            let instruction = fastrand::usize(0..=3);
-
-            let instruction = match instruction {
-                0 => {
-                    let val = fastrand::usize(0..self.args.max_num);
-
-                    Instruction::Load(val)
-                }
-
-                1 | 2 => {
-                    let addr1 = fastrand::usize(0..vm::MEM_SIZE);
-                    let addr2 = fastrand::usize(0..vm::MEM_SIZE);
-
-                    match instruction {
-                        1 => Instruction::Swap(addr1, addr2),
-                        2 => Instruction::XOR(addr1, addr2),
-
-                        _ => panic!("SUPER unexpected error occurred"),
-                    }
-                }
-
-                3 => {
-                    let addr = fastrand::usize(0..vm::MEM_SIZE);
-
-                    Instruction::Inc(addr)
-                }
-
-                _ => panic!("SUPER unexpected error occurred"),
-            };
-
-            program.instructions.push(instruction);
+            program
+                .instructions
+                .push(generate_instruction(self.args.max_num));
         }
 
         program

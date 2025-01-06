@@ -13,7 +13,7 @@ use superr_vm::{
 
 use super::{Optimizer, OptimizerArgs};
 
-const INSTRUCTIONS: [&'static str; 4] = ["LOAD", "SWAP", "XOR", "INC"];
+const INSTRUCTIONS: [&'static str; 7] = ["LOAD", "SWAP", "XOR", "INC", "DECR", "ADD", "SUB"];
 
 pub struct ExhaustiveOptimizer {
     pub args: OptimizerArgs,
@@ -114,12 +114,12 @@ impl ExhaustiveOptimizer {
         match instruction {
             "LOAD" => (0..=self.args.max_num).map(|val| [val, 0]).collect_vec(),
 
-            "SWAP" | "XOR" => (0..MEM_SIZE)
+            "SWAP" | "XOR" | "ADD" | "SUB" => (0..MEM_SIZE)
                 .cartesian_product(0..MEM_SIZE)
                 .map(|(a, b)| [a, b])
                 .collect(),
 
-            "INC" => (0..MEM_SIZE).map(|val| [val, 0]).collect(),
+            "INC" | "DECR" => (0..MEM_SIZE).map(|val| [val, 0]).collect(),
 
             _ => panic!("Unknown instruction: {}", instruction),
         }
@@ -128,9 +128,16 @@ impl ExhaustiveOptimizer {
     fn create_instruction(&self, inst: &str, args: [usize; 2]) -> Instruction {
         match inst {
             "LOAD" => Instruction::Load(args[0]),
+
             "SWAP" => Instruction::Swap(args[0], args[1]),
+
             "XOR" => Instruction::XOR(args[0], args[1]),
+
             "INC" => Instruction::Inc(args[0]),
+            "DECR" => Instruction::Decr(args[0]),
+
+            "ADD" => Instruction::Add(args[0], args[1]),
+            "SUB" => Instruction::Sub(args[0], args[1]),
 
             _ => panic!("Unknown instruction: {}", inst),
         }

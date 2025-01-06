@@ -1,10 +1,9 @@
 use std::{mem, sync::atomic::Ordering};
 
 use rayon::Scope;
-use superr_vm::{
-    instruction::Instruction,
-    vm::{self, State, VM},
-};
+use superr_vm::vm::{State, VM};
+
+use crate::generate_instruction;
 
 use super::{Optimizer, OptimizerArgs};
 
@@ -51,7 +50,9 @@ impl Optimizer for DiffingOptimizer {
             // TODO: can this be simplified?
             let mut new_program = self.args.optimal.read().unwrap().clone();
 
-            new_program.instructions.push(self.generate_instruction());
+            new_program
+                .instructions
+                .push(generate_instruction(self.args.max_num));
             vm.execute_program(new_program.clone());
 
             let new_score = DiffingOptimizer::score(&vm.state, &self.args.target);
@@ -86,38 +87,6 @@ impl Optimizer for DiffingOptimizer {
 
 impl DiffingOptimizer {
     /// Randomly generates a single instruction based on the [`DiffingOptimizerOptions`].
-    fn generate_instruction(&self) -> Instruction {
-        let instruction = fastrand::usize(0..=3);
-
-        match instruction {
-            0 => {
-                let val = fastrand::usize(0..self.args.max_num);
-
-                Instruction::Load(val)
-            }
-
-            1 | 2 => {
-                let addr1 = fastrand::usize(0..vm::MEM_SIZE);
-                let addr2 = fastrand::usize(0..vm::MEM_SIZE);
-
-                match instruction {
-                    1 => Instruction::Swap(addr1, addr2),
-                    2 => Instruction::XOR(addr1, addr2),
-
-                    _ => panic!("SUPER unexpected error occurred"),
-                }
-            }
-
-            3 => {
-                let addr = fastrand::usize(0..vm::MEM_SIZE);
-
-                Instruction::Inc(addr)
-            }
-
-            _ => panic!("SUPER unexpected error occurred"),
-        }
-    }
-
     /// Euclidean distance.
     ///
     /// Developer Note: Maybe apply penalty based on length?
