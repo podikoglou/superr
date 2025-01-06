@@ -8,7 +8,7 @@ pub fn execute(args: GenSubcommand) {
         let reg2 = fastrand::usize(0..vm::MEM_SIZE);
 
         // TODO: cli args
-        let val = fastrand::usize(0..12);
+        let val = fastrand::u8(0..12);
         let instruction = fastrand::usize(0..=3);
 
         let instruction = match instruction {

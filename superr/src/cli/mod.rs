@@ -43,7 +43,7 @@ pub struct OptimizeSubcommand {
 
     /// max number that can be loaded
     #[argh(option)]
-    pub max_num: usize,
+    pub max_num: u8,
 
     /// optimizer to use (options: random)
     #[argh(option)]

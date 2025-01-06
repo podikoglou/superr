@@ -8,7 +8,7 @@ use std::{mem, sync::atomic::Ordering};
 use superr_vm::{
     instruction::Instruction,
     program::Program,
-    vm::{MEM_SIZE, VM},
+    vm::{MemValue, MEM_SIZE, VM},
 };
 
 use super::{Optimizer, OptimizerArgs};
@@ -112,7 +112,9 @@ impl ExhaustiveOptimizer {
 
     fn gen_arg_sets(&self, instruction: &str) -> Vec<[usize; 2]> {
         match instruction {
-            "LOAD" => (0..=self.args.max_num).map(|val| [val, 0]).collect_vec(),
+            "LOAD" => (0..=self.args.max_num as usize)
+                .map(|val| [val, 0])
+                .collect_vec(),
 
             "SWAP" | "XOR" | "ADD" | "SUB" => (0..MEM_SIZE)
                 .cartesian_product(0..MEM_SIZE)
@@ -127,7 +129,7 @@ impl ExhaustiveOptimizer {
 
     fn create_instruction(&self, inst: &str, args: [usize; 2]) -> Instruction {
         match inst {
-            "LOAD" => Instruction::Load(args[0]),
+            "LOAD" => Instruction::Load(args[0] as MemValue),
 
             "SWAP" => Instruction::Swap(args[0], args[1]),
 

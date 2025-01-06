@@ -1,14 +1,17 @@
-use superr_vm::{instruction::Instruction, vm};
+use superr_vm::{
+    instruction::Instruction,
+    vm::{self, MemValue},
+};
 
 pub mod optimizers;
 pub mod vm_pool;
 
-pub fn generate_instruction(max_num: usize) -> Instruction {
+pub fn generate_instruction(max_num: MemValue) -> Instruction {
     let instruction = fastrand::usize(0..=6);
 
     match instruction {
         0 => {
-            let val = fastrand::usize(0..max_num);
+            let val = fastrand::u8(0..max_num);
 
             Instruction::Load(val)
         }

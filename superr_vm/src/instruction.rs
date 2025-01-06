@@ -1,8 +1,8 @@
-use crate::address::MemoryAddress;
+use crate::{address::MemoryAddress, vm::MemValue};
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Copy, Eq, Hash)]
 pub enum Instruction {
-    Load(usize),
+    Load(MemValue),
 
     Swap(MemoryAddress, MemoryAddress),
 
@@ -48,6 +48,8 @@ mod parsers {
         Err, IResult,
     };
 
+    use crate::vm::MemValue;
+
     use super::Instruction;
 
     fn load_parser(i: &str) -> IResult<&str, (&str, u8)> {
@@ -88,7 +90,7 @@ mod parsers {
 
     pub fn instruction_parser(i: &str) -> IResult<&str, Instruction> {
         match load_parser(i) {
-            Ok((_, (_, val))) => return Ok((i, Instruction::Load(val as usize))),
+            Ok((_, (_, val))) => return Ok((i, Instruction::Load(val as MemValue))),
             _ => {}
         }
 

@@ -4,7 +4,10 @@ use std::sync::{
 };
 
 use rayon::Scope;
-use superr_vm::{program::Program, vm::State};
+use superr_vm::{
+    program::Program,
+    vm::{MemValue, State},
+};
 
 pub mod diffing;
 pub mod exhaustive;
@@ -18,7 +21,7 @@ pub struct OptimizerArgs {
     pub length: usize,
 
     /// Largest possible number that can appear in instructions such as LOAD.
-    pub max_num: usize,
+    pub max_num: MemValue,
 
     /// Max amount of instructions a program should have. Typically our
     /// original program's length minus 1.

@@ -2,7 +2,8 @@ use crate::{instruction::Instruction, program::Program};
 
 pub const MEM_SIZE: usize = 12;
 
-pub type State = [usize; MEM_SIZE];
+pub type MemValue = u8;
+pub type State = [MemValue; MEM_SIZE];
 
 #[derive(Debug, Default)]
 pub struct VM {
