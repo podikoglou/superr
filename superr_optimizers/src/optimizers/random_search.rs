@@ -124,7 +124,7 @@ impl RandomSearchOptimizer {
                 3 => {
                     let addr = fastrand::usize(0..vm::MEM_SIZE);
 
-                    Instruction::Load(addr)
+                    Instruction::Inc(addr)
                 }
 
                 _ => panic!("SUPER unexpected error occurred"),
