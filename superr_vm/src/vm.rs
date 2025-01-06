@@ -53,6 +53,19 @@ impl VM {
 
                     self.pc += 1;
                 }
+
+                Instruction::Add(a, b) => {
+                    self.state[a] = self.state[a] + self.state[b];
+
+                    self.pc += 1;
+                }
+
+                Instruction::Sub(a, b) => {
+                    self.state[a] = self.state[a] - self.state[b];
+
+                    self.pc += 1;
+                }
+
                 Instruction::Put(addr) => {
                     // TODO: custom writer which may or may not be stdout, so we can handle
                     // optimization without having to constantly print out
