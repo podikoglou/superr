@@ -6,6 +6,7 @@ pub enum Instruction {
     Swap(MemoryAddress, MemoryAddress),
     XOR(MemoryAddress, MemoryAddress),
     Inc(MemoryAddress),
+    Decr(MemoryAddress),
     Put(MemoryAddress),
     Jmp(usize),
 }
@@ -17,6 +18,7 @@ impl ToString for Instruction {
             Instruction::Swap(a, b) => format!("SWAP {} {}", a, b),
             Instruction::XOR(a, b) => format!("XOR {} {}", a, b),
             Instruction::Inc(a) => format!("INC {}", a),
+            Instruction::Decr(a) => format!("DECR {}", a),
             Instruction::Put(a) => format!("PUT {}", a),
             Instruction::Jmp(a) => format!("JMP {}", a),
         }
@@ -49,6 +51,9 @@ mod parsers {
         separated_pair(tag("INC"), space0, u8)(i)
     }
 
+    fn decr_parser(i: &str) -> IResult<&str, (&str, u8)> {
+        separated_pair(tag("DECR"), space0, u8)(i)
+    }
     fn put_parser(i: &str) -> IResult<&str, (&str, u8)> {
         separated_pair(tag("PUT"), space0, u8)(i)
     }
@@ -82,6 +87,10 @@ mod parsers {
             _ => {}
         };
 
+        match decr_parser(i) {
+            Ok((_, (_, addr))) => return Ok((i, Instruction::Decr(addr as usize))),
+            _ => {}
+        };
         match put_parser(i) {
             Ok((_, (_, addr))) => return Ok((i, Instruction::Put(addr as usize))),
             _ => {}

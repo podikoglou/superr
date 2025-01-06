@@ -48,6 +48,11 @@ impl VM {
                     self.pc += 1;
                 }
 
+                Instruction::Decr(addr) => {
+                    self.state[addr] -= 1;
+
+                    self.pc += 1;
+                }
                 Instruction::Put(addr) => {
                     // TODO: custom writer which may or may not be stdout, so we can handle
                     // optimization without having to constantly print out
