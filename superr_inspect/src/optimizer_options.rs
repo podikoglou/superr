@@ -3,18 +3,28 @@ use eframe::egui::{Response, Ui};
 pub struct OptimizerOptions {
     pub max_instructions: usize,
     pub max_number: usize,
+    pub optimize_clicked: bool,
 }
 
 impl OptimizerOptions {
     pub fn ui(&mut self, ui: &mut Ui) {
         ui.vertical(|ui| {
-            // Max Instructions
-            ui.label("Max Instructions");
-            integer_field(ui, &mut self.max_instructions);
+            ui.vertical(|ui| {
+                // Max Instructions
+                ui.label("Max Instructions");
+                integer_field(ui, &mut self.max_instructions);
 
-            // Max Number
-            ui.label("Max Number");
-            integer_field(ui, &mut self.max_number);
+                // Max Number
+                ui.label("Max Number");
+                integer_field(ui, &mut self.max_number);
+            });
+
+            ui.separator();
+
+            // Optimize Button
+            let optimize_button = ui.button("Optimize");
+
+            self.optimize_clicked = optimize_button.clicked();
         });
     }
 }

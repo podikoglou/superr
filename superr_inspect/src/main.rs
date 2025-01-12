@@ -60,6 +60,7 @@ impl Default for SuperrInspect {
             optimizer_options: OptimizerOptions {
                 max_instructions: 12,
                 max_number: 8,
+                optimize_clicked: false,
             },
         }
     }
@@ -81,13 +82,6 @@ impl eframe::App for SuperrInspect {
 
                     if run_button.clicked() {
                         self.execute_program();
-                    }
-
-                    // Optimize Button
-                    let optimize_button = ui.button("Optimize");
-
-                    if optimize_button.clicked() {
-                        // self.execute_program();
                     }
                 });
 
