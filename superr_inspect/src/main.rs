@@ -82,6 +82,13 @@ impl eframe::App for SuperrInspect {
                     if run_button.clicked() {
                         self.execute_program();
                     }
+
+                    // Reset VM
+                    let reset_vm_button = ui.button("Reset VM");
+
+                    if reset_vm_button.clicked() {
+                        self.vm.reset();
+                    }
                 });
 
                 ui.separator();
