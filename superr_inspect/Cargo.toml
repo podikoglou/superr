@@ -1,0 +1,11 @@
+[package]
+name = "superr_inspect"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eframe = "0.30.0"
+egui_code_editor = "0.2.11"
+egui_extras = "0.30.0"
+superr_optimizers = { path = "../superr_optimizers" }
+superr_vm = { path = "../superr_vm" }
