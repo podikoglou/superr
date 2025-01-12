@@ -8,6 +8,15 @@ use memory_viewer::MemoryViewer;
 use optimizer_options::OptimizerOptions;
 use superr_vm::{instruction::Instruction, program::Program, vm::VM};
 
+static DEFAULT_PROGRAM: &str = "
+LOAD 3
+SWAP 0 1
+LOAD 3
+SWAP 0 2
+LOAD 3
+SWAP 0 3
+LOAD 3";
+
 struct SuperrInspect {
     vm: VM,
 
@@ -40,7 +49,7 @@ impl Default for SuperrInspect {
 
         Self {
             vm,
-            code_buffer: String::default(),
+            code_buffer: DEFAULT_PROGRAM.to_string(),
             memory_viewer: MemoryViewer::default(),
             editor: CodeEditor::default()
                 .id_source("code editor")
