@@ -1,4 +1,4 @@
-use eframe::egui::{Grid, ScrollArea, Ui};
+use eframe::egui::{Grid, Ui};
 use superr_vm::vm::State;
 
 #[derive(Default)]
