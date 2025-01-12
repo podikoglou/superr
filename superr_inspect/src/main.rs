@@ -8,8 +8,7 @@ use memory_viewer::MemoryViewer;
 use optimizer_options::OptimizerOptions;
 use superr_vm::{instruction::Instruction, program::Program, vm::VM};
 
-static DEFAULT_PROGRAM: &str = "
-LOAD 3
+static DEFAULT_PROGRAM: &str = "LOAD 3
 SWAP 0 1
 LOAD 3
 SWAP 0 2
