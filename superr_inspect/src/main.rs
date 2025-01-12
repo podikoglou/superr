@@ -1,18 +1,22 @@
 pub mod memory_viewer;
+pub mod optimizer_options;
 pub mod syntax;
 
 use eframe::egui;
 use egui_code_editor::{CodeEditor, ColorTheme};
 use memory_viewer::MemoryViewer;
+use optimizer_options::OptimizerOptions;
 use superr_vm::{instruction::Instruction, program::Program, vm::VM};
 
 struct SuperrInspect {
     vm: VM,
+
     code_buffer: String,
+
     editor: CodeEditor,
     memory_viewer: MemoryViewer,
+    optimizer_options: OptimizerOptions,
 }
-
 impl SuperrInspect {
     fn execute_program(&mut self) {
         let instructions = self
@@ -45,6 +49,10 @@ impl Default for SuperrInspect {
                 .with_theme(ColorTheme::GRUVBOX)
                 .with_syntax(syntax::superr())
                 .with_numlines(true),
+            optimizer_options: OptimizerOptions {
+                max_instructions: 12,
+                max_number: 8,
+            },
         }
     }
 }
@@ -56,18 +64,35 @@ impl eframe::App for SuperrInspect {
                 // Code Editor
                 self.editor.show(ui, &mut self.code_buffer);
 
+                ui.separator();
+
                 // Controls
-                let run_button = ui.button("Run");
+                ui.horizontal(|ui| {
+                    // Run Button
+                    let run_button = ui.button("Run");
 
-                if run_button.clicked() {
-                    self.execute_program();
-                }
+                    if run_button.clicked() {
+                        self.execute_program();
+                    }
 
-                // Separator
+                    // Optimize Button
+                    let optimize_button = ui.button("Optimize");
+
+                    if optimize_button.clicked() {
+                        // self.execute_program();
+                    }
+                });
+
                 ui.separator();
 
                 // VM Info
-                self.memory_viewer.ui(ui, &self.vm.state);
+                ui.horizontal(|ui| {
+                    self.memory_viewer.ui(ui, &self.vm.state);
+
+                    ui.separator();
+
+                    self.optimizer_options.ui(ui);
+                });
             });
         });
     }
