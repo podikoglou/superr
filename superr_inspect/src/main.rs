@@ -38,7 +38,6 @@ impl SuperrInspect {
 
         let program = Program { instructions };
 
-        dbg!(&program);
         self.vm.execute_program(program);
     }
 }
