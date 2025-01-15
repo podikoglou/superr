@@ -1,3 +1,4 @@
+pub mod bench;
 pub mod gen;
 pub mod optimize;
 pub mod run;
@@ -17,6 +18,7 @@ pub enum Subcommands {
     Run(RunSubcommand),
     Gen(GenSubcommand),
     Optimize(OptimizeSubcommand),
+    Bench(BenchSubcommand),
 }
 
 #[derive(FromArgs, PartialEq, Debug)]
@@ -67,3 +69,8 @@ impl FromArgValue for OptimizerType {
         }
     }
 }
+
+#[derive(FromArgs, PartialEq, Debug)]
+/// Benchmarks the Superr VM by indefinitely running random instructions.
+#[argh(subcommand, name = "bench")]
+pub struct BenchSubcommand {}
