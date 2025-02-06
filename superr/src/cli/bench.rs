@@ -40,7 +40,7 @@ pub fn execute(args: BenchSubcommand) {
     let should_stop_4 = should_stop.clone();
 
     thread_pool.scope(|_| {
-        bench_loop(counter, should_stop_4);
+        bench_loop(args.buffer, counter, should_stop_4);
     });
 }
 
@@ -117,11 +117,11 @@ fn progress_loop(counter: Arc<AtomicU64>, should_stop: Arc<AtomicBool>) {
     }
 }
 
-fn bench_loop(counter: Arc<AtomicU64>, should_stop: Arc<AtomicBool>) {
+fn bench_loop(buffer: usize, counter: Arc<AtomicU64>, should_stop: Arc<AtomicBool>) {
     let mut vm = VM::default();
 
     while !should_stop.load(Ordering::Relaxed) {
-        let instructions = (0..500)
+        let instructions = (0..buffer)
             .map(|_| generate_instruction(8))
             .collect::<Vec<Instruction>>();
 
@@ -131,6 +131,6 @@ fn bench_loop(counter: Arc<AtomicU64>, should_stop: Arc<AtomicBool>) {
 
         vm.execute_program(program);
 
-        counter.fetch_add(500, Ordering::Relaxed);
+        counter.fetch_add(buffer as u64, Ordering::Relaxed);
     }
 }

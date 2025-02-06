@@ -73,4 +73,8 @@ impl FromArgValue for OptimizerType {
 #[derive(FromArgs, PartialEq, Debug)]
 /// Benchmarks the Superr VM by indefinitely running random instructions.
 #[argh(subcommand, name = "bench")]
-pub struct BenchSubcommand {}
+pub struct BenchSubcommand {
+    /// amount of instructions to generate at once
+    #[argh(option, default = "500")]
+    pub buffer: usize,
+}
