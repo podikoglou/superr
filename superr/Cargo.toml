@@ -6,8 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+superr_assembler = { path = "../superr_assembler/" }
 superr_vm = { path = "../superr_vm/" }
 superr_optimizers = { path = "../superr_optimizers/" }
+
 argh = "0.1.12"
 num-format = "0.4.4"
 indicatif = "0.17.8"
