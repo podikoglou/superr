@@ -1,14 +1,46 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+// TODO:
+//  - char literal
+//  - ++, --, +=, *=, /=
+pub enum Token {
+    Identifier(String), // factorial, for, int
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+    // Literals
+    IntLiteral(u16),       // 21
+    FloatLiteral(f32),     // 3.14
+    StringLiteral(String), // "Qua!"
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+    // Delimiters
+    OpenParen,  // (
+    CloseParen, // )
+
+    OpenBrace,  // {
+    CloseBrace, // }
+
+    OpenBracket,  // [
+    CloseBracket, // ]
+
+    DoubleQuote,
+
+    // Logical Operators
+    And, // &&
+    Or,  // ||
+    Not, // !
+
+    // Punctuation
+    Semicolon, // ;
+    Comma,     // ,
+    Period,    // .
+
+    // Math
+    Equals,       // =
+    EqualsEquals, // ==
+    Plus,         // +
+    Minus,        // -
+    Slash,        // /
+    Asterisk,     // *
+    Percent,      // %
+
+    // Special
+    EOF,
+    Invalid(String),
 }
