@@ -44,3 +44,10 @@ pub enum Token {
     EOF,
     Invalid(String),
 }
+
+/// Lexically analyzes a Qua file's textual contents
+pub fn lex(source: String) -> Vec<Token> {
+    let mut tokens: Vec<Token> = vec![];
+
+    tokens
+}
