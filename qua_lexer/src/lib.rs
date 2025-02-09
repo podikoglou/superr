@@ -1,6 +1,7 @@
 // TODO:
 //  - char literal
 //  - ++, --, +=, *=, /=
+#[derive(Debug, PartialEq)]
 pub enum Token {
     Identifier(String), // factorial, for, int
 
