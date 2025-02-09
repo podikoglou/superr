@@ -236,4 +236,52 @@ mod tests {
             vec![Token::Period, Token::Period, Token::Period, Token::EOF],
         );
     }
+
+    #[test]
+    fn test_math() {
+        // equals
+        assert_tokens_eq("=", vec![Token::Equals, Token::EOF]);
+        assert_tokens_eq("= =", vec![Token::Equals, Token::Equals, Token::EOF]);
+
+        // equals equals
+        assert_tokens_eq("==", vec![Token::EqualsEquals, Token::EOF]);
+
+        // plus
+        assert_tokens_eq("+", vec![Token::Plus, Token::EOF]);
+        assert_tokens_eq(
+            "++ +",
+            vec![Token::Plus, Token::Plus, Token::Plus, Token::EOF],
+        );
+
+        // minus
+        assert_tokens_eq("-", vec![Token::Minus, Token::EOF]);
+        assert_tokens_eq(
+            "-- -",
+            vec![Token::Minus, Token::Minus, Token::Minus, Token::EOF],
+        );
+
+        // slash
+        assert_tokens_eq("/", vec![Token::Slash, Token::EOF]);
+        assert_tokens_eq("/ /", vec![Token::Slash, Token::Slash, Token::EOF]);
+        assert_tokens_ne("//", vec![Token::Slash, Token::Slash, Token::EOF]);
+
+        // asterisk
+        assert_tokens_eq("*", vec![Token::Asterisk, Token::EOF]);
+        assert_tokens_eq(
+            "* **",
+            vec![
+                Token::Asterisk,
+                Token::Asterisk,
+                Token::Asterisk,
+                Token::EOF,
+            ],
+        );
+
+        // percent
+        assert_tokens_eq("%", vec![Token::Percent, Token::EOF]);
+        assert_tokens_eq(
+            "%% %",
+            vec![Token::Percent, Token::Percent, Token::Percent, Token::EOF],
+        );
+    }
 }
