@@ -201,4 +201,33 @@ mod tests {
         assert_tokens_eq("!", vec![Token::Not, Token::EOF]);
         assert_tokens_eq("!!", vec![Token::Not, Token::Not, Token::EOF]);
     }
+
+    #[test]
+    fn test_punctuation() {
+        // semicolon
+        assert_tokens_eq(";", vec![Token::Semicolon, Token::EOF]);
+        assert_tokens_eq(
+            ";; ;",
+            vec![
+                Token::Semicolon,
+                Token::Semicolon,
+                Token::Semicolon,
+                Token::EOF,
+            ],
+        );
+
+        // comma
+        assert_tokens_eq(",", vec![Token::Comma, Token::EOF]);
+        assert_tokens_eq(
+            ",, ,",
+            vec![Token::Comma, Token::Comma, Token::Comma, Token::EOF],
+        );
+
+        // period
+        assert_tokens_eq(".", vec![Token::Period, Token::EOF]);
+        assert_tokens_eq(
+            ".. .",
+            vec![Token::Period, Token::Period, Token::Period, Token::EOF],
+        );
+    }
 }
