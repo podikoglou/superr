@@ -19,8 +19,6 @@ pub enum Token {
     OpenBracket,  // [
     CloseBracket, // ]
 
-    DoubleQuote,
-
     // Logical Operators
     And, // &&
     Or,  // ||
