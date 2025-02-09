@@ -61,6 +61,12 @@ mod tests {
         assert_eq!(result, expected);
     }
 
+    fn assert_tokens_ne(input: &str, expected: Vec<Token>) {
+        let result = lex(input.to_string());
+
+        assert_ne!(result, expected);
+    }
+
     #[test]
     fn test_int_literal() {
         assert_tokens_eq("0", vec![Token::IntLiteral(0), Token::EOF]);
