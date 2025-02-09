@@ -1,0 +1,11 @@
+int factorial(int x) {
+    int y = 1;
+
+    for(int i in 2..=x) {
+        y = y * i;
+    }
+
+    return y;
+}
+
+print("factorial(5) = {}\n", factorial(5));

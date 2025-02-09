@@ -1,3 +1,9 @@
 [workspace]
 resolver = "2"
-members = ["superr_vm", "superr_optimizers", "superr", "superr_inspect"]
+members = [
+    "superr_vm",
+    "superr_optimizers",
+    "superr",
+    "superr_inspect",
+    "qua_lexer",
+]
