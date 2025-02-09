@@ -5,7 +5,7 @@ pub enum Token {
     Identifier(String), // factorial, for, int
 
     // Literals
-    IntLiteral(u16),       // 21
+    IntLiteral(u32),       // 21
     FloatLiteral(f32),     // 3.14
     StringLiteral(String), // "Qua!"
 
