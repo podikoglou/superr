@@ -183,4 +183,22 @@ mod tests {
             ],
         );
     }
+
+    #[test]
+    fn test_logical_operators() {
+        // and
+        assert_tokens_eq("&&", vec![Token::And, Token::EOF]);
+        assert_tokens_eq(
+            "&& &&&&",
+            vec![Token::And, Token::And, Token::And, Token::EOF],
+        );
+
+        // or
+        assert_tokens_eq("||", vec![Token::Or, Token::EOF]);
+        assert_tokens_eq("|| ||||", vec![Token::Or, Token::Or, Token::Or, Token::EOF]);
+
+        // not
+        assert_tokens_eq("!", vec![Token::Not, Token::EOF]);
+        assert_tokens_eq("!!", vec![Token::Not, Token::Not, Token::EOF]);
+    }
 }
