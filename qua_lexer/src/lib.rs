@@ -143,7 +143,6 @@ pub fn lex(source: String) -> Vec<Token> {
                                 // the counter.
                                 if c2 == '.' {
                                     decimal_points += 1;
-                                    continue;
                                 }
 
                                 // if it's a digit, we just add it to the buffer
