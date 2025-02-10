@@ -33,11 +33,17 @@ pub enum Token {
     // Math
     Equals,       // =
     EqualsEquals, // ==
-    Plus,         // +
-    Minus,        // -
-    Slash,        // /
-    Asterisk,     // *
-    Percent,      // %
+    NotEquals,    // !=
+    Greater,      // >
+    Lesser,       // <
+    GreaterEq,    // >=
+    LesserEq,     // <=
+
+    Plus,     // +
+    Minus,    // -
+    Slash,    // /
+    Asterisk, // *
+    Percent,  // %
 
     // Special
     EOF,
