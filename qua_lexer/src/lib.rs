@@ -390,7 +390,7 @@ mod tests {
         // slash
         assert_tokens_eq!("/", vec![Token::Slash, Token::EOF]);
         assert_tokens_eq!("/ /", vec![Token::Slash, Token::Slash, Token::EOF]);
-        assert_tokens_ne!("//", vec![Token::Slash, Token::Slash, Token::EOF]);
+        assert_tokens_eq!("//", vec![Token::Slash, Token::Slash, Token::EOF]);
 
         // asterisk
         assert_tokens_eq!("*", vec![Token::Asterisk, Token::EOF]);
