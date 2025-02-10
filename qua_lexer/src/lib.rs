@@ -239,6 +239,7 @@ mod tests {
     fn test_int_literal() {
         assert_tokens_eq!("0", vec![Token::IntLiteral(0), Token::EOF]);
         assert_tokens_eq!("1", vec![Token::IntLiteral(1), Token::EOF]);
+        assert_tokens_eq!("123", vec![Token::IntLiteral(123), Token::EOF]);
         assert_tokens_eq!(
             "4294967294",
             vec![Token::IntLiteral(4294967294), Token::EOF]
@@ -255,6 +256,9 @@ mod tests {
         assert_tokens_eq!("0.1", vec![Token::FloatLiteral(0.1), Token::EOF]);
         assert_tokens_eq!("1.0", vec![Token::FloatLiteral(1.0), Token::EOF]);
         assert_tokens_eq!("1.1", vec![Token::FloatLiteral(1.1), Token::EOF]);
+        assert_tokens_eq!("3.14", vec![Token::FloatLiteral(3.14), Token::EOF]);
+        assert_tokens_eq!("0.5", vec![Token::FloatLiteral(0.5), Token::EOF]);
+        assert_tokens_eq!("123.456", vec![Token::FloatLiteral(123.456), Token::EOF]);
         assert_tokens_eq!(
             "3.141592653589793238462643383279502884197",
             vec![
@@ -262,6 +266,19 @@ mod tests {
                 Token::EOF,
             ]
         );
+        assert_tokens_eq!("999.999", vec![Token::FloatLiteral(999.999), Token::EOF]);
+        assert_tokens_eq!("00.11", vec![Token::FloatLiteral(0.11), Token::EOF]);
+        assert_tokens_eq!("000.111", vec![Token::FloatLiteral(0.111), Token::EOF]);
+        assert_tokens_eq!(
+            "0000000.19199191",
+            vec![Token::FloatLiteral(0.19199191), Token::EOF]
+        );
+
+        // should this be supported?
+        // assert_tokens_eq!(".123", vec![Token::FloatLiteral(0.123), Token::EOF]);
+
+        assert_tokens_eq!("123.", vec![Token::FloatLiteral(123.), Token::EOF]);
+        assert_tokens_eq!("123.", vec![Token::FloatLiteral(123.0), Token::EOF]);
     }
 
     #[test]
