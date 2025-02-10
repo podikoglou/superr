@@ -122,7 +122,64 @@ pub fn lex(source: String) -> Vec<Token> {
             '*' => tokens.push(Token::Asterisk),
             '%' => tokens.push(Token::Percent),
 
-            _ => {}
+            c => {
+                // handle digits
+                if c.is_digit(10) {
+                    // we initialize a string buffer for our number with the
+                    // character we've just read, which is the first digit
+                    let mut num_buffer = String::from(c);
+
+                    // this is a counter for keeping track of how many decimal
+                    // points we've read.
+                    // (that doesn't mean they won't appear in the buffer)
+                    let mut decimal_points: usize = 0;
+
+                    loop {
+                        // consume the next character, ONLY if it is a digit or a
+                        // decimal point
+                        match chars.next_if(|x| x.is_digit(10) || x == &'.') {
+                            Some(c2) => {
+                                // if the character is a decimal point, we increase
+                                // the counter.
+                                if c2 == '.' {
+                                    decimal_points += 1;
+                                    continue;
+                                }
+
+                                // if it's a digit, we just add it to the buffer
+                                num_buffer += &c2.to_string();
+                            }
+
+                            // if the next character isn't a digit or decimal
+                            // point, we break out of this loop and finalize the
+                            // token.
+                            None => break,
+                        }
+                    }
+
+                    // if we've read up to 1 decimal point, the number is (probably) fine and
+                    // we can parse it as a number using rust's std library
+                    if decimal_points <= 1 {
+                        // if we don't have *any* decimal points, we parse it as an integer
+                        if decimal_points == 0 {
+                            match num_buffer.parse::<u32>() {
+                                Ok(num) => tokens.push(Token::IntLiteral(num)),
+                                Err(_) => tokens.push(Token::Invalid(num_buffer)),
+                            }
+                        } else {
+                            // if we *do* have a decimal point, we parse it as a float
+                            match num_buffer.parse::<f32>() {
+                                Ok(num) => tokens.push(Token::FloatLiteral(num)),
+                                Err(_) => tokens.push(Token::Invalid(num_buffer)),
+                            }
+                        }
+                    } else {
+                        // if there's more than one decimal point, we can now
+                        // emit an invalid token
+                        tokens.push(Token::Invalid(num_buffer));
+                    }
+                }
+            }
         }
     }
 
