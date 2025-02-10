@@ -280,6 +280,22 @@ mod tests {
         // equals equals
         assert_tokens_eq("==", vec![Token::EqualsEquals, Token::EOF]);
 
+        // not equals
+        assert_tokens_eq("!=", vec![Token::NotEquals, Token::EOF]);
+        // TODO: how do we want to lex '!=='?
+
+        // greater
+        assert_tokens_eq(">", vec![Token::Greater, Token::EOF]);
+
+        // lesser
+        assert_tokens_eq("<", vec![Token::Lesser, Token::EOF]);
+
+        // greater or equal
+        assert_tokens_eq(">=", vec![Token::GreaterEq, Token::EOF]);
+
+        // lesser or equal
+        assert_tokens_eq("<=", vec![Token::LesserEq, Token::EOF]);
+
         // plus
         assert_tokens_eq("+", vec![Token::Plus, Token::EOF]);
         assert_tokens_eq(
