@@ -54,6 +54,49 @@ pub enum Token {
 pub fn lex(source: String) -> Vec<Token> {
     let mut tokens: Vec<Token> = vec![];
 
+    // state
+    let mut chars = source.chars().peekable();
+
+    while let Some(c) = chars.next() {
+        match c {
+            '(' => tokens.push(Token::OpenParen),
+            ')' => tokens.push(Token::CloseParen),
+
+            '{' => tokens.push(Token::OpenBrace),
+            '}' => tokens.push(Token::CloseBrace),
+
+            '[' => tokens.push(Token::OpenBracket),
+            ']' => tokens.push(Token::CloseBracket),
+
+            ';' => tokens.push(Token::Semicolon),
+            ',' => tokens.push(Token::Comma),
+            '.' => tokens.push(Token::Period),
+
+            '&' => {
+                if let Some(_) = chars.next_if_eq(&'&') {
+                    tokens.push(Token::And)
+                }
+            }
+
+            '|' => {
+                if let Some(_) = chars.next_if_eq(&'|') {
+                    tokens.push(Token::Or)
+                }
+            }
+
+            '!' => {
+                if let Some(_) = chars.next_if_eq(&'=') {
+                    tokens.push(Token::NotEquals)
+                } else {
+                    tokens.push(Token::Not)
+                }
+            }
+
+            _ => {}
+        }
+    }
+
+    tokens.push(Token::EOF);
     tokens
 }
 
