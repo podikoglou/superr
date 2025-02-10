@@ -100,6 +100,22 @@ pub fn lex(source: String) -> Vec<Token> {
                 }
             }
 
+            '>' => {
+                if let Some(_) = chars.next_if_eq(&'=') {
+                    tokens.push(Token::GreaterEq)
+                } else {
+                    tokens.push(Token::Greater)
+                }
+            }
+
+            '<' => {
+                if let Some(_) = chars.next_if_eq(&'=') {
+                    tokens.push(Token::LesserEq)
+                } else {
+                    tokens.push(Token::Lesser)
+                }
+            }
+
             _ => {}
         }
     }
