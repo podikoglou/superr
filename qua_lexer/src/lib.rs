@@ -116,6 +116,12 @@ pub fn lex(source: String) -> Vec<Token> {
                 }
             }
 
+            '+' => tokens.push(Token::Plus),
+            '-' => tokens.push(Token::Minus),
+            '/' => tokens.push(Token::Slash),
+            '*' => tokens.push(Token::Asterisk),
+            '%' => tokens.push(Token::Percent),
+
             _ => {}
         }
     }
