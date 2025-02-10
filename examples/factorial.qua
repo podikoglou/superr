@@ -1,7 +1,7 @@
 int factorial(int x) {
     int y = 1;
 
-    for(int i in 2..=x) {
+    for(int i in range(2, x + 1)) {
         y = y * i;
     }
 
