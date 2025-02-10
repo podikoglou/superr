@@ -92,6 +92,14 @@ pub fn lex(source: String) -> Vec<Token> {
                 }
             }
 
+            '=' => {
+                if let Some(_) = chars.next_if_eq(&'=') {
+                    tokens.push(Token::EqualsEquals)
+                } else {
+                    tokens.push(Token::Equals)
+                }
+            }
+
             _ => {}
         }
     }
