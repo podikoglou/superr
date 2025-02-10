@@ -123,7 +123,7 @@ pub fn lex(source: String) -> Vec<Token> {
             '%' => tokens.push(Token::Percent),
 
             c => {
-                // handle digits
+                // handle number literals
                 if c.is_digit(10) {
                     // we initialize a string buffer for our number with the
                     // character we've just read, which is the first digit
