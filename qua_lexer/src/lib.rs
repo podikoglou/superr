@@ -122,6 +122,23 @@ pub fn lex(source: String) -> Vec<Token> {
             '*' => tokens.push(Token::Asterisk),
             '%' => tokens.push(Token::Percent),
 
+            '"' => {
+                // we create an empty string buffer in which we'll put
+                // the contents (excluding the quotes) of our string
+                let mut string_buffer = String::default();
+
+                while let Some(c2) = chars.next() {
+                    match c2 {
+                        '"' => break,
+                        '\\' => todo!("handle backslash"),
+
+                        c2 => string_buffer.push(c2),
+                    }
+                }
+
+                tokens.push(Token::StringLiteral(string_buffer));
+            }
+
             c => {
                 // handle number literals
                 if c.is_digit(10) {
