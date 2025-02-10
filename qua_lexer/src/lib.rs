@@ -67,6 +67,34 @@ mod tests {
         assert_ne!(result, expected);
     }
 
+    fn assert_identifier_correct_lexing(input: &str) {
+        assert_tokens_eq(
+            input,
+            vec![Token::Identifier(input.to_string()), Token::EOF],
+        );
+    }
+
+    #[test]
+    fn test_identifiers() {
+        // user defined identifiers
+        assert_identifier_correct_lexing("qua");
+        assert_identifier_correct_lexing("Qua");
+        assert_identifier_correct_lexing("x");
+
+        // qua keywords
+        assert_identifier_correct_lexing("for");
+        assert_identifier_correct_lexing("in");
+        assert_identifier_correct_lexing("if");
+        assert_identifier_correct_lexing("else");
+        assert_identifier_correct_lexing("while");
+        assert_identifier_correct_lexing("range");
+
+        assert_identifier_correct_lexing("int");
+        assert_identifier_correct_lexing("string");
+
+        assert_identifier_correct_lexing("print");
+    }
+
     #[test]
     fn test_int_literal() {
         assert_tokens_eq("0", vec![Token::IntLiteral(0), Token::EOF]);
