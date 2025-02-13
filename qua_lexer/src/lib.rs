@@ -235,9 +235,18 @@ mod tests {
         };
     }
 
-    macro_rules! assert_identifier_correct_lexing {
+    macro_rules! assert_identifier_correct_lexing_eq {
         ($input:expr) => {
             assert_tokens_eq!(
+                $input,
+                vec![Token::Identifier($input.to_string()), Token::EOF]
+            );
+        };
+    }
+
+    macro_rules! assert_identifier_correct_lexing_ne {
+        ($input:expr) => {
+            assert_tokens_ne!(
                 $input,
                 vec![Token::Identifier($input.to_string()), Token::EOF]
             );
@@ -247,22 +256,29 @@ mod tests {
     #[test]
     fn test_identifiers() {
         // user defined identifiers
-        assert_identifier_correct_lexing!("qua");
-        assert_identifier_correct_lexing!("Qua");
-        assert_identifier_correct_lexing!("x");
+        assert_identifier_correct_lexing_eq!("qua");
+        assert_identifier_correct_lexing_eq!("Qua");
+        assert_identifier_correct_lexing_eq!("x");
+        assert_identifier_correct_lexing_eq!("x_");
+        assert_identifier_correct_lexing_eq!("_x");
+        assert_identifier_correct_lexing_eq!("____________________Qua_");
+
+        assert_identifier_correct_lexing_ne!("____________________Qua!_");
+        assert_identifier_correct_lexing_ne!("!Qua__");
+        assert_identifier_correct_lexing_ne!("*qua");
 
         // qua keywords
-        assert_identifier_correct_lexing!("for");
-        assert_identifier_correct_lexing!("in");
-        assert_identifier_correct_lexing!("if");
-        assert_identifier_correct_lexing!("else");
-        assert_identifier_correct_lexing!("while");
-        assert_identifier_correct_lexing!("range");
+        assert_identifier_correct_lexing_eq!("for");
+        assert_identifier_correct_lexing_eq!("in");
+        assert_identifier_correct_lexing_eq!("if");
+        assert_identifier_correct_lexing_eq!("else");
+        assert_identifier_correct_lexing_eq!("while");
+        assert_identifier_correct_lexing_eq!("range");
 
-        assert_identifier_correct_lexing!("int");
-        assert_identifier_correct_lexing!("string");
+        assert_identifier_correct_lexing_eq!("int");
+        assert_identifier_correct_lexing_eq!("string");
 
-        assert_identifier_correct_lexing!("print");
+        assert_identifier_correct_lexing_eq!("print");
     }
 
     #[test]
