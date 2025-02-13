@@ -137,8 +137,6 @@ pub fn lex(source: String) -> Vec<Token> {
                             closed = true;
                             break;
                         }
-                        '\\' => todo!("handle backslash"),
-
                         c2 => string_buffer.push(c2),
                     }
                 }
