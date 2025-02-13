@@ -17,7 +17,8 @@ fn main() -> anyhow::Result<()> {
             .value_parser(value_parser!(usize)),
         arg!(--"max-ins" <val> "Maximum amount of instructions to generate")
             .action(ArgAction::Set)
-            .value_parser(value_parser!(usize)),
+            .value_parser(value_parser!(usize))
+            .required(true),
         arg!(--"min-imm" <val> "Minimum value an intermediate value can take")
             .default_value("1")
             .action(ArgAction::Set)
