@@ -59,6 +59,8 @@ pub fn lex(source: String) -> Vec<Token> {
 
     while let Some(c) = chars.next() {
         match c {
+            '\n' | '\t' | '\r' | ' ' => continue,
+
             '(' => tokens.push(Token::OpenParen),
             ')' => tokens.push(Token::CloseParen),
 
