@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 superr_vm = { path = "../superr_vm/" }
 superr_optimizers = { path = "../superr_optimizers/" }
+qua_lexer = { path = "../qua_lexer/" }
 num-format = "0.4.4"
 indicatif = "0.17.8"
 rayon = "1.10.0"

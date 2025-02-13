@@ -80,6 +80,19 @@ fn main() -> anyhow::Result<()> {
                         .default_value("512"),
                 ),
         )
+        .subcommand(
+            command!("qua")
+                .about("Qua-related commands")
+                .arg_required_else_help(true)
+                .subcommand_required(true)
+                .subcommand(
+                    command!("lex").about("Lexically analyzes a file").arg(
+                        arg!([input] "Qua program to analyze")
+                            .default_value("-")
+                            .value_parser(value_parser!(FileOrStdin<String>)),
+                    ),
+                ),
+        )
         .get_matches();
 
     match matches.subcommand() {
@@ -87,6 +100,12 @@ fn main() -> anyhow::Result<()> {
         Some(("gen", matches)) => cli::gen::execute(matches),
         Some(("optimize", matches)) => cli::optimize::execute(matches),
         Some(("bench", matches)) => cli::bench::execute(matches),
+
+        Some(("qua", matches)) => match matches.subcommand() {
+            Some(("lex", matches)) => cli::qua::lex::execute(matches),
+
+            _ => unreachable!("this won't happen"),
+        },
 
         _ => unreachable!("this won't happen"),
     }
