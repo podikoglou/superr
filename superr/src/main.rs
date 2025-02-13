@@ -24,6 +24,7 @@ fn main() -> anyhow::Result<()> {
             .action(ArgAction::Set)
             .value_parser(value_parser!(u8)),
         arg!(--"max-imm" <val> "Maximum value an intermediate value can take")
+            .default_value("255")
             .action(ArgAction::Set)
             .value_parser(value_parser!(u8)),
         arg!(--exclude <instructions> "Instruction to exclude (can be used multiple times)")
