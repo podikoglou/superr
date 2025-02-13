@@ -194,6 +194,20 @@ pub fn lex(source: String) -> Vec<Token> {
                         // emit an invalid token
                         tokens.push(Token::Invalid(num_buffer));
                     }
+                } else if c.is_ascii_alphabetic() || c == '_' {
+                    // handle identifiers
+
+                    let mut ident_buf = String::from(c);
+
+                    loop {
+                        match chars.next_if(|x| x.is_alphanumeric() || x == &'_') {
+                            Some(c2) => ident_buf += &c2.to_string(),
+                            None => {
+                                tokens.push(Token::Identifier(ident_buf));
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }
