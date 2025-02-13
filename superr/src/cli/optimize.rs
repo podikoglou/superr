@@ -73,8 +73,8 @@ fn optimize(program: Program, matches: &ArgMatches) -> Program {
     // TODO: use min_instructions and min_imm
 
     // get arguments
-    let min_instructions = matches.get_one::<usize>("min-instructions").unwrap();
-    let max_instructions = matches.get_one::<usize>("max-instructions").unwrap();
+    let min_instructions = matches.get_one::<usize>("min-ins").unwrap();
+    let max_instructions = matches.get_one::<usize>("max-ins").unwrap();
 
     let min_imm = matches.get_one::<u8>("min-imm").unwrap();
     let max_imm = matches.get_one::<u8>("max-imm").unwrap();
