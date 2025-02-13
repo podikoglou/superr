@@ -59,6 +59,11 @@ fn main() -> anyhow::Result<()> {
                 .about("Optimizes a program")
                 .args(&program_generation_args)
                 .arg(
+                    arg!([input] "Superr program to run")
+                        .default_value("-")
+                        .value_parser(value_parser!(FileOrStdin<String>)),
+                )
+                .arg(
                     arg!(--optimizer <optimizer> "Optimizer to use")
                         .action(ArgAction::Set)
                         .value_parser(clap::builder::PossibleValuesParser::new(OPTIMIZERS.clone())),
