@@ -1,22 +1,22 @@
-use std::io::{self, BufRead};
-
+use anyhow::Context;
+use clap::ArgMatches;
+use clap_stdin::FileOrStdin;
 use superr_vm::{instruction::Instruction, program::Program, vm::VM};
 
-use super::RunSubcommand;
+pub fn execute(matches: &ArgMatches) -> anyhow::Result<()> {
+    let input = matches
+        .get_one::<FileOrStdin>("input")
+        .context("couldn't get input")?;
 
-pub fn execute(_: RunSubcommand) {
-    // properly read program from stdin
+    let contents = input.clone().contents().context("couldn't read input")?;
+
     let mut program = Program::new();
-    let lines = io::stdin().lock().lines();
 
-    for line in lines {
-        match line {
-            Ok(v) => {
-                if !v.is_empty() {
-                    program.instructions.push(Instruction::from(v))
-                }
-            }
-            Err(_) => break,
+    for line in contents.lines() {
+        if !line.is_empty() {
+            program
+                .instructions
+                .push(Instruction::from(line.to_string()))
         }
     }
 
@@ -26,4 +26,6 @@ pub fn execute(_: RunSubcommand) {
     vm.execute_program(program);
 
     dbg!(vm);
+
+    Ok(())
 }

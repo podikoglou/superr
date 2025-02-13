@@ -1,5 +1,4 @@
 use std::{
-    io::{self, BufRead},
     mem,
     sync::{
         atomic::{AtomicBool, AtomicU64, Ordering},
@@ -9,6 +8,9 @@ use std::{
     time::Duration,
 };
 
+use anyhow::Context;
+use clap::ArgMatches;
+use clap_stdin::FileOrStdin;
 use indicatif::{ProgressBar, ProgressStyle};
 use num_format::{Locale, ToFormattedString};
 use rayon::ThreadPoolBuilder;
@@ -22,23 +24,20 @@ use superr_vm::{
     vm::{State, VM},
 };
 
-use crate::cli::OptimizerType;
+pub fn execute(matches: &ArgMatches) -> anyhow::Result<()> {
+    let input = matches
+        .get_one::<FileOrStdin>("input")
+        .context("couldn't get input")?;
 
-use super::OptimizeSubcommand;
+    let contents = input.clone().contents().context("couldn't read input")?;
 
-pub fn execute(args: OptimizeSubcommand) {
-    // read program from stdin
     let mut program_in = Program::new();
-    let lines = io::stdin().lock().lines();
 
-    for line in lines {
-        match line {
-            Ok(v) => {
-                if !v.is_empty() {
-                    program_in.instructions.push(Instruction::from(v))
-                }
-            }
-            Err(_) => break,
+    for line in contents.lines() {
+        if !line.is_empty() {
+            program_in
+                .instructions
+                .push(Instruction::from(line.to_string()))
         }
     }
 
@@ -54,7 +53,7 @@ pub fn execute(args: OptimizeSubcommand) {
     eprintln!();
 
     // run optimizer
-    let program_out = optimize(program_in, &args);
+    let program_out = optimize(program_in, matches);
     let length_out = program_out.instructions.len();
 
     // print results
@@ -66,9 +65,22 @@ pub fn execute(args: OptimizeSubcommand) {
 
     eprintln!("Input Program: {} Instructions", length_in);
     eprintln!("Output Program: {} Instructions", length_out);
+
+    Ok(())
 }
 
-fn optimize(program: Program, args: &OptimizeSubcommand) -> Program {
+fn optimize(program: Program, matches: &ArgMatches) -> Program {
+    // TODO: use min_instructions and min_imm
+
+    // get arguments
+    let min_instructions = matches.get_one::<usize>("min-instructions").unwrap();
+    let max_instructions = matches.get_one::<usize>("max-instructions").unwrap();
+
+    let min_imm = matches.get_one::<u8>("min-imm").unwrap();
+    let max_imm = matches.get_one::<u8>("max-imm").unwrap();
+
+    let optimizer = matches.get_one::<&str>("optimizer").unwrap();
+
     // run program to get the target memory & get amount of instructinos,
     // we pass these two to the optimizer.
     let target = VM::compute_state(&program);
@@ -92,8 +104,8 @@ fn optimize(program: Program, args: &OptimizeSubcommand) -> Program {
     ctrlc::set_handler(move || should_stop_2.store(true, Ordering::Relaxed)).unwrap();
 
     let optimizer_args = OptimizerArgs {
-        max_instructions: args.max_instructions,
-        max_num: args.max_num,
+        max_instructions: *max_instructions,
+        max_num: *max_imm,
 
         target,
         length,
@@ -107,9 +119,8 @@ fn optimize(program: Program, args: &OptimizeSubcommand) -> Program {
         progress_loop(counter_2, should_stop_3);
     });
 
-    match args.optimizer {
-        // random search
-        OptimizerType::RandomSearch => {
+    match optimizer {
+        &"random" => {
             let mut optimizer = RandomSearchOptimizer::new(optimizer_args);
 
             // start threads
@@ -117,9 +128,7 @@ fn optimize(program: Program, args: &OptimizeSubcommand) -> Program {
                 optimizer.start_optimization(&scope);
             });
         }
-
-        // exhaustive
-        OptimizerType::Exhaustive => {
+        &"exhaustive" => {
             // initialize optimizer
             let mut optimizer = ExhaustiveOptimizer::new(optimizer_args);
 
@@ -128,9 +137,8 @@ fn optimize(program: Program, args: &OptimizeSubcommand) -> Program {
                 optimizer.start_optimization(&scope);
             });
         }
-
-        // diffing
-        OptimizerType::Diffing => {
+        &"diffing" => {
+            // initialize optimizer
             let mut optimizer = DiffingOptimizer::new(optimizer_args);
 
             // start threads
@@ -138,6 +146,8 @@ fn optimize(program: Program, args: &OptimizeSubcommand) -> Program {
                 optimizer.start_optimization(&scope);
             });
         }
+
+        _ => unreachable!(),
     }
 
     // return result

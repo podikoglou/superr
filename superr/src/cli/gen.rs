@@ -1,24 +1,39 @@
+use anyhow::Context;
+use clap::ArgMatches;
 use superr_vm::{instruction::Instruction, vm};
 
-use super::GenSubcommand;
+use crate::INSTRUCTIONS;
 
-pub fn execute(args: GenSubcommand) {
-    for _ in 0..args.instructions {
-        let reg1 = fastrand::usize(0..vm::MEM_SIZE);
-        let reg2 = fastrand::usize(0..vm::MEM_SIZE);
+pub fn execute(matches: &ArgMatches) -> anyhow::Result<()> {
+    let min_instructions = matches.get_one::<usize>("min-instructions").unwrap();
+    let max_instructions = matches.get_one::<usize>("max-instructions").unwrap();
 
-        // TODO: cli args
-        let val = fastrand::u8(0..12);
-        let instruction = fastrand::usize(0..=3);
+    let min_imm = matches.get_one::<u8>("min-imm").unwrap();
+    let max_imm = matches.get_one::<u8>("max-imm").unwrap();
 
-        let instruction = match instruction {
-            0 => Instruction::Load(val),
-            1 => Instruction::Swap(reg1, reg2),
-            2 => Instruction::XOR(reg1, reg2),
-            3 => Instruction::Inc(reg1),
-            _ => panic!("SUPER unexpected error occurred"),
+    for _ in 0..fastrand::usize(*min_instructions..=*max_instructions) {
+        let addr1 = fastrand::usize(0..vm::MEM_SIZE);
+        let addr2 = fastrand::usize(0..vm::MEM_SIZE);
+
+        let imm = fastrand::u8(min_imm..=max_imm);
+
+        let choice = fastrand::choice(INSTRUCTIONS).context("invalid iterator length")?;
+
+        let instruction = match choice {
+            "load" => Instruction::Load(imm),
+            "swap" => Instruction::Swap(addr1, addr2),
+            "xor" => Instruction::XOR(addr1, addr2),
+            "inc" => Instruction::Inc(addr1),
+            "decr" => Instruction::Decr(addr1),
+            "add" => Instruction::Add(addr1, addr2),
+            "sub" => Instruction::Sub(addr1, addr2),
+            "put" => Instruction::Put(addr1),
+            // "jump" => Instruction::Jump(???)
+            _ => unreachable!(),
         };
 
         println!("{}", instruction.to_string());
     }
+
+    Ok(())
 }

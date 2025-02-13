@@ -7,6 +7,7 @@ use std::{
     time::Duration,
 };
 
+use clap::ArgMatches;
 use indicatif::{ProgressBar, ProgressStyle};
 use num_format::{Locale, ToFormattedString};
 use rayon::ThreadPoolBuilder;
@@ -16,9 +17,9 @@ use superr_vm::{
     vm::{self, MemValue, VM},
 };
 
-use super::BenchSubcommand;
+pub fn execute(matches: &ArgMatches) -> anyhow::Result<()> {
+    let buffer = matches.get_one::<usize>("buffer").unwrap();
 
-pub fn execute(args: BenchSubcommand) {
     let thread_pool = ThreadPoolBuilder::new().build().unwrap();
 
     let counter = Arc::new(AtomicU64::default());
@@ -40,8 +41,10 @@ pub fn execute(args: BenchSubcommand) {
     let should_stop_4 = should_stop.clone();
 
     thread_pool.scope(|_| {
-        bench_loop(args.buffer, counter, should_stop_4);
+        bench_loop(*buffer, counter, should_stop_4);
     });
+
+    Ok(())
 }
 
 pub fn generate_instruction(max_num: MemValue) -> Instruction {
