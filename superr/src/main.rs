@@ -57,7 +57,6 @@ fn main() -> anyhow::Result<()> {
             command!("optimize")
                 .aliases(["o", "optimise"])
                 .about("Optimizes a program")
-                .args(&program_generation_args)
                 .arg(
                     arg!([input] "Superr program to run")
                         .default_value("-")
@@ -68,6 +67,8 @@ fn main() -> anyhow::Result<()> {
                         .action(ArgAction::Set)
                         .value_parser(clap::builder::PossibleValuesParser::new(OPTIMIZERS.clone()))
                         .required(true),
+                )
+                .args(&program_generation_args),
         )
         .subcommand(
             command!("bench")
