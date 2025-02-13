@@ -1,5 +1,4 @@
 // TODO:
-//  - char literal
 //  - ++, --, +=, *=, /=
 #[derive(Debug, PartialEq)]
 pub enum Token {
@@ -9,6 +8,7 @@ pub enum Token {
     IntLiteral(u32),       // 21
     FloatLiteral(f32),     // 3.14
     StringLiteral(String), // "Qua!"
+    CharLiteral(char),     // 'q'
 
     // Delimiters
     OpenParen,  // (
@@ -137,6 +137,50 @@ pub fn lex(source: String) -> Vec<Token> {
                 }
 
                 tokens.push(Token::StringLiteral(string_buffer));
+            }
+
+            '\'' => {
+                // we create an empty string buffer in which we'll put
+                // the contents (excluding the quotes) of our character
+                //
+                // does that sound weird? well after reading we want to
+                // ensure that inside this buffer there's *only* one
+                // character, and we want to be able to report the
+                // whole contents of whatever is in it otherwise.
+                //
+                // also, when i implement unicode support, multiple
+                // characters *will* actually be needed here.
+                let mut char_buffer = String::default();
+                let mut closed = false;
+
+                while let Some(c2) = chars.next() {
+                    match c2 {
+                        '\'' => {
+                            closed = true;
+                            break;
+                        }
+                        '\\' => todo!("handle backslash"),
+
+                        c2 => char_buffer.push(c2),
+                    }
+                }
+
+                if !closed {
+                    tokens.push(Token::Invalid("Invalid expression".to_string()));
+                    continue;
+                }
+
+                if char_buffer.len() == 1 {
+                    // NOTE: it's safe to unwrap here, right?
+                    let char = char_buffer.chars().next().unwrap();
+
+                    tokens.push(Token::CharLiteral(char));
+                } else {
+                    tokens.push(Token::Invalid(format!(
+                        "Character literal '{}' must be one character long",
+                        char_buffer
+                    )));
+                }
             }
 
             c => {
