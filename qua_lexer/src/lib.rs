@@ -127,13 +127,23 @@ pub fn lex(source: String) -> Vec<Token> {
                 // the contents (excluding the quotes) of our string
                 let mut string_buffer = String::default();
 
+                let mut closed = false;
+
                 while let Some(c2) = chars.next() {
                     match c2 {
-                        '"' => break,
+                        '"' => {
+                            closed = true;
+                            break;
+                        }
                         '\\' => todo!("handle backslash"),
 
                         c2 => string_buffer.push(c2),
                     }
+                }
+
+                if !closed {
+                    tokens.push(Token::Invalid("Invalid expression".to_string()));
+                    continue;
                 }
 
                 tokens.push(Token::StringLiteral(string_buffer));
