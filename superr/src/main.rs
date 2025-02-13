@@ -41,8 +41,8 @@ fn main() -> anyhow::Result<()> {
                 .about("Runs a Superr program")
                 .arg(
                     arg!([input] "Superr program to run")
-                        .value_parser(value_parser!(FileOrStdin<String>))
-                        .required(true),
+                        .default_value("-")
+                        .value_parser(value_parser!(FileOrStdin<String>)),
                 ),
         )
         .subcommand(
