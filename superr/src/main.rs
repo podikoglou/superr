@@ -66,8 +66,8 @@ fn main() -> anyhow::Result<()> {
                 .arg(
                     arg!(--optimizer <optimizer> "Optimizer to use")
                         .action(ArgAction::Set)
-                        .value_parser(clap::builder::PossibleValuesParser::new(OPTIMIZERS.clone())),
-                ),
+                        .value_parser(clap::builder::PossibleValuesParser::new(OPTIMIZERS.clone()))
+                        .required(true),
         )
         .subcommand(
             command!("bench")
