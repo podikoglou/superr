@@ -11,22 +11,18 @@ const OPTIMIZERS: [&str; 3] = ["random", "exhaustive", "diffing"];
 
 fn main() -> anyhow::Result<()> {
     let program_generation_args = vec![
-        arg!(--"min-i" --"min-instructions" <val> "Minimum amount of instructions to generate")
+        arg!(--"min-ins" <val> "Minimum amount of instructions to generate")
             .default_value("0")
-            .required(true)
             .action(ArgAction::Set)
             .value_parser(value_parser!(usize)),
-        arg!(--"max-i" --"max-instructions" <val> "Maximum amount of instructions to generate")
-            .required(true)
+        arg!(--"max-ins" <val> "Maximum amount of instructions to generate")
             .action(ArgAction::Set)
             .value_parser(value_parser!(usize)),
         arg!(--"min-imm" <val> "Minimum value an intermediate value can take")
             .default_value("1")
-            .required(true)
             .action(ArgAction::Set)
             .value_parser(value_parser!(u8)),
         arg!(--"max-imm" <val> "Maximum value an intermediate value can take")
-            .required(true)
             .action(ArgAction::Set)
             .value_parser(value_parser!(u8)),
         arg!(--exclude <instructions> "Instruction to exclude (can be used multiple times)")
@@ -35,6 +31,7 @@ fn main() -> anyhow::Result<()> {
                 INSTRUCTIONS.clone(),
             )),
     ];
+
     let matches = command!()
         .arg_required_else_help(true)
         .subcommand_required(true)
