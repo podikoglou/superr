@@ -79,7 +79,7 @@ fn optimize(program: Program, matches: &ArgMatches) -> Program {
     // let min_imm = matches.get_one::<u8>("min-imm").unwrap();
     let max_imm = matches.get_one::<u8>("max-imm").unwrap();
 
-    let optimizer = matches.get_one::<&str>("optimizer").unwrap();
+    let optimizer = matches.get_one::<String>("optimizer").unwrap();
 
     // run program to get the target memory & get amount of instructinos,
     // we pass these two to the optimizer.
@@ -119,8 +119,8 @@ fn optimize(program: Program, matches: &ArgMatches) -> Program {
         progress_loop(counter_2, should_stop_3);
     });
 
-    match optimizer {
-        &"random" => {
+    match optimizer.as_str() {
+        "random" => {
             let mut optimizer = RandomSearchOptimizer::new(optimizer_args);
 
             // start threads
@@ -128,7 +128,7 @@ fn optimize(program: Program, matches: &ArgMatches) -> Program {
                 optimizer.start_optimization(&scope);
             });
         }
-        &"exhaustive" => {
+        "exhaustive" => {
             // initialize optimizer
             let mut optimizer = ExhaustiveOptimizer::new(optimizer_args);
 
@@ -137,7 +137,7 @@ fn optimize(program: Program, matches: &ArgMatches) -> Program {
                 optimizer.start_optimization(&scope);
             });
         }
-        &"diffing" => {
+        "diffing" => {
             // initialize optimizer
             let mut optimizer = DiffingOptimizer::new(optimizer_args);
 
