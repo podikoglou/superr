@@ -393,6 +393,19 @@ mod tests {
     }
 
     #[test]
+    fn test_char_literal() {
+        assert_tokens_eq!("'a'", vec![Token::CharLiteral('a'), Token::EOF]);
+        assert_tokens_ne!("a'", vec![Token::CharLiteral('a'), Token::EOF]);
+        assert_tokens_ne!("'a", vec![Token::CharLiteral('a'), Token::EOF]);
+        assert_tokens_ne!("a", vec![Token::CharLiteral('a'), Token::EOF]);
+
+        assert_tokens_eq!("'4'", vec![Token::CharLiteral('4'), Token::EOF]);
+        assert_tokens_ne!("4'", vec![Token::CharLiteral('4'), Token::EOF]);
+        assert_tokens_ne!("'4", vec![Token::CharLiteral('4'), Token::EOF]);
+        assert_tokens_ne!("4", vec![Token::CharLiteral('4'), Token::EOF]);
+    }
+
+    #[test]
     fn test_delimiters() {
         // parentheses
         assert_tokens_eq!("(", vec![Token::OpenParen, Token::EOF]);
