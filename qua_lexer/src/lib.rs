@@ -140,7 +140,20 @@ pub fn lex(source: String) -> Vec<Token> {
                 }
             }
 
-            '/' => tokens.push(Token::Slash),
+            '/' => {
+                if let Some(_) = chars.next_if_eq(&'/') {
+                    // read until we get to a newline
+                    while let Some(c2) = chars.next() {
+                        if c2 == '\n' {
+                            break;
+                        }
+                    }
+
+                // } else if let Some(_) = chars.next_if_eq(&'*') {
+                } else {
+                    tokens.push(Token::Slash)
+                }
+            }
             '*' => tokens.push(Token::Asterisk),
             '%' => tokens.push(Token::Percent),
 
