@@ -93,6 +93,7 @@ fn main() -> anyhow::Result<()> {
                     ),
                 ),
         )
+        .subcommand(command!("inspect").about("Launches interactive GUI for Superr"))
         .get_matches();
 
     match matches.subcommand() {
@@ -100,6 +101,7 @@ fn main() -> anyhow::Result<()> {
         Some(("gen", matches)) => cli::gen::execute(matches),
         Some(("optimize", matches)) => cli::optimize::execute(matches),
         Some(("bench", matches)) => cli::bench::execute(matches),
+        Some(("inspect", matches)) => cli::inspect::execute(matches),
 
         Some(("qua", matches)) => match matches.subcommand() {
             Some(("lex", matches)) => cli::qua::lex::execute(matches),

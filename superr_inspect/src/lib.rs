@@ -106,7 +106,7 @@ impl eframe::App for SuperrInspect {
     }
 }
 
-fn main() -> eframe::Result {
+pub fn launch() -> eframe::Result {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([600.0, 600.0]),
         ..Default::default()
