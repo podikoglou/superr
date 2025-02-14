@@ -1,4 +1,4 @@
-use std::char;
+use std::{char, iter::Peekable, str::Chars};
 
 // TODO:
 //  +=, *=, /=
@@ -53,6 +53,30 @@ pub enum Token {
     // Special
     EOF,
     Invalid(String),
+}
+
+/// Lexes a string literal
+fn lex_string_literal(chars: &mut Peekable<Chars>) -> Token {
+    // we create an empty string buffer in which we'll put
+    // the contents (excluding the quotes) of our string
+    let mut string_buffer = String::default();
+
+    let mut closed = false;
+
+    while let Some(c2) = chars.next() {
+        match c2 {
+            '"' => {
+                closed = true;
+                break;
+            }
+            c2 => string_buffer.push(c2),
+        }
+    }
+
+    match closed {
+        true => Token::StringLiteral(string_buffer),
+        false => Token::Invalid("Invalid expression".to_string()),
+    }
 }
 
 /// Lexically analyzes a Qua file's textual contents
@@ -158,28 +182,7 @@ pub fn lex(source: String) -> Vec<Token> {
             '%' => tokens.push(Token::Percent),
 
             '"' => {
-                // we create an empty string buffer in which we'll put
-                // the contents (excluding the quotes) of our string
-                let mut string_buffer = String::default();
-
-                let mut closed = false;
-
-                while let Some(c2) = chars.next() {
-                    match c2 {
-                        '"' => {
-                            closed = true;
-                            break;
-                        }
-                        c2 => string_buffer.push(c2),
-                    }
-                }
-
-                if !closed {
-                    tokens.push(Token::Invalid("Invalid expression".to_string()));
-                    continue;
-                }
-
-                tokens.push(Token::StringLiteral(string_buffer));
+                tokens.push(lex_string_literal(&mut chars));
             }
 
             '\'' => {
