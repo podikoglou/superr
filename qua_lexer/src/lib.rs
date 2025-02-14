@@ -664,17 +664,15 @@ mod tests {
 
         // plus
         assert_tokens_eq!("+", vec![Token::Plus, Token::EOF]);
-        assert_tokens_eq!(
-            "++ +",
-            vec![Token::Plus, Token::Plus, Token::Plus, Token::EOF]
-        );
+        assert_tokens_eq!("++", vec![Token::PlusPlus, Token::EOF]);
+        assert_tokens_eq!("++ +", vec![Token::PlusPlus, Token::Plus, Token::EOF]);
+        assert_tokens_eq!("+ ++", vec![Token::Plus, Token::PlusPlus, Token::EOF]);
 
         // minus
         assert_tokens_eq!("-", vec![Token::Minus, Token::EOF]);
-        assert_tokens_eq!(
-            "-- -",
-            vec![Token::Minus, Token::Minus, Token::Minus, Token::EOF]
-        );
+        assert_tokens_eq!("--", vec![Token::MinusMinus, Token::EOF]);
+        assert_tokens_eq!("-- -", vec![Token::MinusMinus, Token::Minus, Token::EOF]);
+        assert_tokens_eq!("- --", vec![Token::Minus, Token::MinusMinus, Token::EOF]);
 
         // slash
         assert_tokens_eq!("/", vec![Token::Slash, Token::EOF]);
