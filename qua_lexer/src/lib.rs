@@ -225,6 +225,16 @@ fn lex_identifier(chars: &mut Peekable<Chars>, first_char: char) -> Token {
     }
 }
 
+macro_rules! multi_char {
+    ($chars:expr, $next_char:expr, $single:expr, $multi:expr) => {
+        if let Some(_) = $chars.next_if_eq(&$next_char) {
+            $multi
+        } else {
+            $single
+        }
+    };
+}
+
 /// Lexically analyzes a Qua file's textual contents
 #[test_fuzz::test_fuzz]
 pub fn lex(source: String) -> Vec<Token> {
@@ -250,65 +260,26 @@ pub fn lex(source: String) -> Vec<Token> {
             ',' => tokens.push(Token::Comma),
             '.' => tokens.push(Token::Period),
 
-            '&' => {
-                if let Some(_) = chars.next_if_eq(&'&') {
-                    tokens.push(Token::And)
-                }
-            }
+            '&' => tokens.push(multi_char!(
+                chars,
+                '&',
+                Token::Invalid(String::from("&")),
+                Token::And
+            )),
 
-            '|' => {
-                if let Some(_) = chars.next_if_eq(&'|') {
-                    tokens.push(Token::Or)
-                }
-            }
+            '|' => tokens.push(multi_char!(
+                chars,
+                '|',
+                Token::Invalid(String::from("|")),
+                Token::Or
+            )),
 
-            '!' => {
-                if let Some(_) = chars.next_if_eq(&'=') {
-                    tokens.push(Token::NotEquals)
-                } else {
-                    tokens.push(Token::Not)
-                }
-            }
-
-            '=' => {
-                if let Some(_) = chars.next_if_eq(&'=') {
-                    tokens.push(Token::EqualsEquals)
-                } else {
-                    tokens.push(Token::Equals)
-                }
-            }
-
-            '>' => {
-                if let Some(_) = chars.next_if_eq(&'=') {
-                    tokens.push(Token::GreaterEq)
-                } else {
-                    tokens.push(Token::Greater)
-                }
-            }
-
-            '<' => {
-                if let Some(_) = chars.next_if_eq(&'=') {
-                    tokens.push(Token::LesserEq)
-                } else {
-                    tokens.push(Token::Lesser)
-                }
-            }
-
-            '+' => {
-                if let Some(_) = chars.next_if_eq(&'+') {
-                    tokens.push(Token::PlusPlus)
-                } else {
-                    tokens.push(Token::Plus)
-                }
-            }
-
-            '-' => {
-                if let Some(_) = chars.next_if_eq(&'-') {
-                    tokens.push(Token::MinusMinus)
-                } else {
-                    tokens.push(Token::Minus)
-                }
-            }
+            '!' => tokens.push(multi_char!(chars, '=', Token::Not, Token::NotEquals)),
+            '=' => tokens.push(multi_char!(chars, '=', Token::Equals, Token::EqualsEquals)),
+            '>' => tokens.push(multi_char!(chars, '=', Token::Greater, Token::GreaterEq)),
+            '<' => tokens.push(multi_char!(chars, '=', Token::Lesser, Token::LesserEq)),
+            '+' => tokens.push(multi_char!(chars, '+', Token::Plus, Token::PlusPlus)),
+            '-' => tokens.push(multi_char!(chars, '-', Token::Minus, Token::MinusMinus)),
 
             '/' => {
                 if let Some(_) = chars.next_if_eq(&'/') {
