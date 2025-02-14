@@ -213,6 +213,18 @@ pub fn lex_number_literal(chars: &mut Peekable<Chars>, first_char: char) -> Toke
     }
 }
 
+/// Lexes an identifier
+fn lex_identifier(chars: &mut Peekable<Chars>, first_char: char) -> Token {
+    let mut ident_buf = String::from(first_char);
+
+    loop {
+        match chars.next_if(|x| x.is_alphanumeric() || x == &'_') {
+            Some(c2) => ident_buf += &c2.to_string(),
+            None => return Token::Identifier(ident_buf),
+        }
+    }
+}
+
 /// Lexically analyzes a Qua file's textual contents
 #[test_fuzz::test_fuzz]
 pub fn lex(source: String) -> Vec<Token> {
@@ -325,17 +337,7 @@ pub fn lex(source: String) -> Vec<Token> {
                 } else if c.is_ascii_alphabetic() || c == '_' {
                     // handle identifiers
 
-                    let mut ident_buf = String::from(c);
-
-                    loop {
-                        match chars.next_if(|x| x.is_alphanumeric() || x == &'_') {
-                            Some(c2) => ident_buf += &c2.to_string(),
-                            None => {
-                                tokens.push(Token::Identifier(ident_buf));
-                                break;
-                            }
-                        }
-                    }
+                    tokens.push(lex_identifier(&mut chars, c));
                 } else {
                     // if we've gotten to this point and stil haven't recognized the token,
                     // we can assume it's just an invalid token
