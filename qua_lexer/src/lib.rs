@@ -1,7 +1,7 @@
 use std::char;
 
 // TODO:
-//  - ++, --, +=, *=, /=
+//  +=, *=, /=
 #[derive(Debug, PartialEq)]
 pub enum Token {
     Identifier(String), // factorial, for, int
@@ -46,6 +46,9 @@ pub enum Token {
     Slash,    // /
     Asterisk, // *
     Percent,  // %
+
+    PlusPlus,
+    MinusMinus,
 
     // Special
     EOF,
@@ -121,8 +124,22 @@ pub fn lex(source: String) -> Vec<Token> {
                 }
             }
 
-            '+' => tokens.push(Token::Plus),
-            '-' => tokens.push(Token::Minus),
+            '+' => {
+                if let Some(_) = chars.next_if_eq(&'+') {
+                    tokens.push(Token::PlusPlus)
+                } else {
+                    tokens.push(Token::Plus)
+                }
+            }
+
+            '-' => {
+                if let Some(_) = chars.next_if_eq(&'-') {
+                    tokens.push(Token::MinusMinus)
+                } else {
+                    tokens.push(Token::Minus)
+                }
+            }
+
             '/' => tokens.push(Token::Slash),
             '*' => tokens.push(Token::Asterisk),
             '%' => tokens.push(Token::Percent),
