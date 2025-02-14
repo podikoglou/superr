@@ -1,3 +1,5 @@
+use std::char;
+
 // TODO:
 //  - ++, --, +=, *=, /=
 #[derive(Debug, PartialEq)]
@@ -170,8 +172,6 @@ pub fn lex(source: String) -> Vec<Token> {
                             closed = true;
                             break;
                         }
-                        '\\' => todo!("handle backslash"),
-
                         c2 => char_buffer.push(c2),
                     }
                 }
@@ -181,7 +181,42 @@ pub fn lex(source: String) -> Vec<Token> {
                     continue;
                 }
 
-                if char_buffer.len() == 1 {
+                if char_buffer.len() > 1 && char_buffer.starts_with('\\') {
+                    if char_buffer.starts_with("\\u{") && char_buffer.ends_with('}') {
+                        let hex_str = &char_buffer[3..char_buffer.len() - 1];
+                        if hex_str.len() > 6 {
+                            tokens.push(Token::Invalid(format!(
+                                "Unicode escape sequence '{}' is too long",
+                                char_buffer
+                            )));
+                            continue;
+                        }
+                        if let Ok(code_point) = u32::from_str_radix(hex_str, 16) {
+                            if let Some(parsed_char) = char::from_u32(code_point) {
+                                tokens.push(Token::CharLiteral(parsed_char));
+                                continue;
+                            } else {
+                                tokens.push(Token::Invalid(format!(
+                                    "Invalid unicode code point: '{}'",
+                                    char_buffer
+                                )));
+                                continue;
+                            }
+                        } else {
+                            tokens.push(Token::Invalid(format!(
+                                "Invalid unicode escape sequence: '{}'",
+                                char_buffer
+                            )));
+                            continue;
+                        }
+                    } else {
+                        tokens.push(Token::Invalid(format!(
+                            "Invalid escape sequence: '{}'",
+                            char_buffer
+                        )));
+                        continue;
+                    }
+                } else if char_buffer.len() == 1 {
                     // NOTE: it's safe to unwrap here, right?
                     let char = char_buffer.chars().next().unwrap();
 
