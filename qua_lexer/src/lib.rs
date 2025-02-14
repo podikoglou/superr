@@ -330,24 +330,11 @@ pub fn lex(source: String) -> Vec<Token> {
             '"' => tokens.push(lex_string_literal(&mut chars)),
             '\'' => tokens.push(lex_char_literal(&mut chars)),
 
-            c => {
-                if c.is_digit(10) {
-                    // handle number literals
-                    tokens.push(lex_number_literal(&mut chars, c));
-                } else if c.is_ascii_alphabetic() || c == '_' {
-                    // handle identifiers
+            '0'..='9' => tokens.push(lex_number_literal(&mut chars, c)),
 
-                    tokens.push(lex_identifier(&mut chars, c));
-                } else {
-                    // if we've gotten to this point and stil haven't recognized the token,
-                    // we can assume it's just an invalid token
-                    //
-                    // NOTE: Maybe we can pair groups of invalid tokens? or should we only
-                    // do that when printing the error? or neither?
+            'A'..='Z' | 'a'..='z' | '_' => tokens.push(lex_identifier(&mut chars, c)),
 
-                    tokens.push(Token::Invalid(c.to_string()))
-                }
-            }
+            _ => tokens.push(Token::Invalid(c.to_string())),
         }
     }
 
