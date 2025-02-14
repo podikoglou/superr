@@ -148,6 +148,71 @@ fn lex_char_literal(chars: &mut Peekable<Chars>) -> Token {
     }
 }
 
+/// Lexes a number literal, given its first character
+pub fn lex_number_literal(chars: &mut Peekable<Chars>, first_char: char) -> Token {
+    // we initialize a string buffer for our number with the
+    // character we've just read, which is the first digit
+    // let mut num_buffer = String::from(c);
+
+    let mut num_buffer: Vec<u8> = Vec::with_capacity(10);
+    num_buffer.push(first_char as u8);
+
+    // this is a counter for keeping track of how many decimal
+    // points we've read.
+    // (that doesn't mean they won't appear in the buffer)
+    let mut decimal_points: usize = 0;
+
+    loop {
+        // consume the next character, ONLY if it is a digit or a
+        // decimal point
+        match chars.next_if(|x| x.is_digit(10) || x == &'.') {
+            Some(c2) => {
+                // if the character is a decimal point, we increase
+                // the counter.
+                if c2 == '.' {
+                    decimal_points += 1;
+                }
+
+                // if it's a digit, we just add it to the buffer
+                // num_buffer += &c2.to_string();
+                num_buffer.push(c2 as u8);
+            }
+
+            // if the next character isn't a digit or decimal
+            // point, we break out of this loop and finalize the
+            // token.
+            None => break,
+        }
+    }
+
+    // NOTE: can we skip this? (we'd have to change the way
+    // which we store the numbers too)
+    let num_string = String::from_utf8(num_buffer)
+        .expect("couldn't convert num literal to utf8 string (not read properly)");
+
+    // if we've read up to 1 decimal point, the number is (probably) fine and
+    // we can parse it as a number using rust's std library
+    if decimal_points <= 1 {
+        // if we don't have *any* decimal points, we parse it as an integer
+        if decimal_points == 0 {
+            match num_string.parse::<u32>() {
+                Ok(num) => return Token::IntLiteral(num),
+                Err(_) => return Token::Invalid(num_string),
+            }
+        } else {
+            // if we *do* have a decimal point, we parse it as a float
+            match num_string.parse::<f32>() {
+                Ok(num) => return Token::FloatLiteral(num),
+                Err(_) => return Token::Invalid(num_string),
+            }
+        }
+    } else {
+        // if there's more than one decimal point, we can now
+        // emit an invalid token
+        Token::Invalid(num_string)
+    }
+}
+
 /// Lexically analyzes a Qua file's textual contents
 #[test_fuzz::test_fuzz]
 pub fn lex(source: String) -> Vec<Token> {
@@ -254,69 +319,9 @@ pub fn lex(source: String) -> Vec<Token> {
             '\'' => tokens.push(lex_char_literal(&mut chars)),
 
             c => {
-                // handle number literals
                 if c.is_digit(10) {
-                    // we initialize a string buffer for our number with the
-                    // character we've just read, which is the first digit
-                    // let mut num_buffer = String::from(c);
-
-                    let mut num_buffer: Vec<u8> = Vec::with_capacity(10);
-                    num_buffer.push(c as u8);
-
-                    // this is a counter for keeping track of how many decimal
-                    // points we've read.
-                    // (that doesn't mean they won't appear in the buffer)
-                    let mut decimal_points: usize = 0;
-
-                    loop {
-                        // consume the next character, ONLY if it is a digit or a
-                        // decimal point
-                        match chars.next_if(|x| x.is_digit(10) || x == &'.') {
-                            Some(c2) => {
-                                // if the character is a decimal point, we increase
-                                // the counter.
-                                if c2 == '.' {
-                                    decimal_points += 1;
-                                }
-
-                                // if it's a digit, we just add it to the buffer
-                                // num_buffer += &c2.to_string();
-                                num_buffer.push(c2 as u8);
-                            }
-
-                            // if the next character isn't a digit or decimal
-                            // point, we break out of this loop and finalize the
-                            // token.
-                            None => break,
-                        }
-                    }
-
-                    // NOTE: can we skip this? (we'd have to change the way
-                    // which we store the numbers too)
-                    let num_string = String::from_utf8(num_buffer)
-                        .expect("couldn't convert num literal to utf8 string (not read properly)");
-
-                    // if we've read up to 1 decimal point, the number is (probably) fine and
-                    // we can parse it as a number using rust's std library
-                    if decimal_points <= 1 {
-                        // if we don't have *any* decimal points, we parse it as an integer
-                        if decimal_points == 0 {
-                            match num_string.parse::<u32>() {
-                                Ok(num) => tokens.push(Token::IntLiteral(num)),
-                                Err(_) => tokens.push(Token::Invalid(num_string)),
-                            }
-                        } else {
-                            // if we *do* have a decimal point, we parse it as a float
-                            match num_string.parse::<f32>() {
-                                Ok(num) => tokens.push(Token::FloatLiteral(num)),
-                                Err(_) => tokens.push(Token::Invalid(num_string)),
-                            }
-                        }
-                    } else {
-                        // if there's more than one decimal point, we can now
-                        // emit an invalid token
-                        tokens.push(Token::Invalid(num_string));
-                    }
+                    // handle number literals
+                    tokens.push(lex_number_literal(&mut chars, c));
                 } else if c.is_ascii_alphabetic() || c == '_' {
                     // handle identifiers
 
