@@ -690,7 +690,6 @@ mod tests {
         // slash
         assert_tokens_eq!("/", vec![Token::Slash, Token::EOF]);
         assert_tokens_eq!("/ /", vec![Token::Slash, Token::Slash, Token::EOF]);
-        assert_tokens_eq!("//", vec![Token::Slash, Token::Slash, Token::EOF]);
 
         // asterisk
         assert_tokens_eq!("*", vec![Token::Asterisk, Token::EOF]);
@@ -709,6 +708,35 @@ mod tests {
         assert_tokens_eq!(
             "%% %",
             vec![Token::Percent, Token::Percent, Token::Percent, Token::EOF]
+        );
+    }
+
+    #[test]
+    fn test_comments() {
+        assert_tokens_eq!("//", vec![Token::EOF]);
+        assert_tokens_eq!("//hello, world!", vec![Token::EOF]);
+        assert_tokens_eq!("// hello, world!", vec![Token::EOF]);
+        assert_tokens_eq!(
+            "// hello, world!\nint a = 0;",
+            vec![
+                Token::Identifier("int".to_string()),
+                Token::Identifier("a".to_string()),
+                Token::Equals,
+                Token::IntLiteral(0),
+                Token::Semicolon,
+                Token::EOF
+            ]
+        );
+        assert_tokens_eq!(
+            "// Qua!\nint a = 0;// this creates a variable named int",
+            vec![
+                Token::Identifier("int".to_string()),
+                Token::Identifier("a".to_string()),
+                Token::Equals,
+                Token::IntLiteral(0),
+                Token::Semicolon,
+                Token::EOF
+            ]
         );
     }
 }
