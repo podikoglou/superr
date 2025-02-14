@@ -351,6 +351,18 @@ mod tests {
         };
     }
 
+    macro_rules! assert_unicode_char_literal_properly_decoded {
+        ($input:expr, $expected_value:expr) => {
+            assert_tokens_eq!(
+                $input,
+                vec![
+                    Token::CharLiteral(char::from_u32($expected_value).unwrap()),
+                    Token::EOF
+                ]
+            );
+        };
+    }
+
     #[test]
     fn test_identifiers() {
         // user defined identifiers
@@ -449,6 +461,35 @@ mod tests {
         assert_tokens_ne!("4'", vec![Token::CharLiteral('4'), Token::EOF]);
         assert_tokens_ne!("'4", vec![Token::CharLiteral('4'), Token::EOF]);
         assert_tokens_ne!("4", vec![Token::CharLiteral('4'), Token::EOF]);
+    }
+
+    #[test]
+    fn test_char_literal_unicode() {
+        assert_tokens_eq!("'\\u{0041}'", vec![Token::CharLiteral('A'), Token::EOF]);
+        assert_tokens_eq!("'\\u{0042}'", vec![Token::CharLiteral('B'), Token::EOF]);
+        assert_tokens_eq!("'\\u{0043}'", vec![Token::CharLiteral('C'), Token::EOF]);
+        assert_tokens_eq!("'\\u{0044}'", vec![Token::CharLiteral('D'), Token::EOF]);
+        assert_tokens_eq!("'\\u{0045}'", vec![Token::CharLiteral('E'), Token::EOF]);
+        assert_tokens_eq!("'\\u{004a}'", vec![Token::CharLiteral('J'), Token::EOF]);
+        assert_tokens_eq!("'\\u{041a}'", vec![Token::CharLiteral('К'), Token::EOF]);
+        assert_tokens_eq!("'\\u{20B4}'", vec![Token::CharLiteral('₴'), Token::EOF]);
+        assert_tokens_eq!("'\\u{1F600}'", vec![Token::CharLiteral('😀'), Token::EOF]);
+
+        assert_unicode_char_literal_properly_decoded!("'\\u{10FFFF}'", 0x10FFFF);
+        assert_unicode_char_literal_properly_decoded!("'\\u{0}'", 0x0);
+        assert_unicode_char_literal_properly_decoded!("'\\u{F}'", 0xF);
+        assert_unicode_char_literal_properly_decoded!("'\\u{FF}'", 0xFF);
+        assert_unicode_char_literal_properly_decoded!("'\\u{FFF}'", 0xFFF);
+        assert_unicode_char_literal_properly_decoded!("'\\u{FFFF}'", 0xFFFF);
+        assert_unicode_char_literal_properly_decoded!("'\\u{FFFFF}'", 0xFFFFF);
+        assert_unicode_char_literal_properly_decoded!("'\\u{10FFFF}'", 0x10FFFF);
+        assert_unicode_char_literal_properly_decoded!("'\\u{000000}'", 0x000000);
+        assert_unicode_char_literal_properly_decoded!("'\\u{00000F}'", 0x00000F);
+        assert_unicode_char_literal_properly_decoded!("'\\u{0000FF}'", 0x0000FF);
+        assert_unicode_char_literal_properly_decoded!("'\\u{000FFF}'", 0x000FFF);
+        assert_unicode_char_literal_properly_decoded!("'\\u{00FFFF}'", 0x00FFFF);
+        assert_unicode_char_literal_properly_decoded!("'\\u{0FFFFF}'", 0x0FFFFF);
+        assert_unicode_char_literal_properly_decoded!("'\\u{10FFFF}'", 0x10FFFF);
     }
 
     #[test]
