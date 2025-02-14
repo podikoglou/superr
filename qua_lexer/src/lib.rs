@@ -51,6 +51,7 @@ pub enum Token {
 }
 
 /// Lexically analyzes a Qua file's textual contents
+#[test_fuzz::test_fuzz]
 pub fn lex(source: String) -> Vec<Token> {
     let mut tokens: Vec<Token> = vec![];
 

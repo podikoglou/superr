@@ -1,8 +1,0 @@
-[package]
-name = "qua_lexer_fuzz"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-afl = "0.15.14"
-qua_lexer = { path = "../" }
