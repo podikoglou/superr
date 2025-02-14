@@ -79,6 +79,75 @@ fn lex_string_literal(chars: &mut Peekable<Chars>) -> Token {
     }
 }
 
+/// Lexes a character literal
+fn lex_char_literal(chars: &mut Peekable<Chars>) -> Token {
+    // we create an empty string buffer in which we'll put
+    // the contents (excluding the quotes) of our character
+    //
+    // does that sound weird? well after reading we want to
+    // ensure that inside this buffer there's *only* one
+    // character, and we want to be able to report the
+    // whole contents of whatever is in it otherwise.
+    //
+    // also, when i implement unicode support, multiple
+    // characters *will* actually be needed here.
+    let mut char_buffer = String::default();
+    let mut closed = false;
+
+    while let Some(c2) = chars.next() {
+        match c2 {
+            '\'' => {
+                closed = true;
+                break;
+            }
+            c2 => char_buffer.push(c2),
+        }
+    }
+
+    if !closed {
+        return Token::Invalid("Invalid expression".to_string());
+    }
+
+    if char_buffer.len() > 1 && char_buffer.starts_with('\\') {
+        if char_buffer.starts_with("\\u{") && char_buffer.ends_with('}') {
+            let hex_str = &char_buffer[3..char_buffer.len() - 1];
+            if hex_str.len() > 6 {
+                return Token::Invalid(format!(
+                    "Unicode escape sequence '{}' is too long",
+                    char_buffer
+                ));
+            }
+            if let Ok(code_point) = u32::from_str_radix(hex_str, 16) {
+                if let Some(parsed_char) = char::from_u32(code_point) {
+                    return Token::CharLiteral(parsed_char);
+                } else {
+                    return Token::Invalid(format!(
+                        "Invalid unicode code point: '{}'",
+                        char_buffer
+                    ));
+                }
+            } else {
+                return Token::Invalid(format!(
+                    "Invalid unicode escape sequence: '{}'",
+                    char_buffer
+                ));
+            }
+        } else {
+            return Token::Invalid(format!("Invalid escape sequence: '{}'", char_buffer));
+        }
+    } else if char_buffer.len() == 1 {
+        // NOTE: it's safe to unwrap here, right?
+        let char = char_buffer.chars().next().unwrap();
+
+        return Token::CharLiteral(char);
+    } else {
+        return Token::Invalid(format!(
+            "Character literal '{}' must be one character long",
+            char_buffer
+        ));
+    }
+}
+
 /// Lexically analyzes a Qua file's textual contents
 #[test_fuzz::test_fuzz]
 pub fn lex(source: String) -> Vec<Token> {
@@ -181,86 +250,8 @@ pub fn lex(source: String) -> Vec<Token> {
             '*' => tokens.push(Token::Asterisk),
             '%' => tokens.push(Token::Percent),
 
-            '"' => {
-                tokens.push(lex_string_literal(&mut chars));
-            }
-
-            '\'' => {
-                // we create an empty string buffer in which we'll put
-                // the contents (excluding the quotes) of our character
-                //
-                // does that sound weird? well after reading we want to
-                // ensure that inside this buffer there's *only* one
-                // character, and we want to be able to report the
-                // whole contents of whatever is in it otherwise.
-                //
-                // also, when i implement unicode support, multiple
-                // characters *will* actually be needed here.
-                let mut char_buffer = String::default();
-                let mut closed = false;
-
-                while let Some(c2) = chars.next() {
-                    match c2 {
-                        '\'' => {
-                            closed = true;
-                            break;
-                        }
-                        c2 => char_buffer.push(c2),
-                    }
-                }
-
-                if !closed {
-                    tokens.push(Token::Invalid("Invalid expression".to_string()));
-                    continue;
-                }
-
-                if char_buffer.len() > 1 && char_buffer.starts_with('\\') {
-                    if char_buffer.starts_with("\\u{") && char_buffer.ends_with('}') {
-                        let hex_str = &char_buffer[3..char_buffer.len() - 1];
-                        if hex_str.len() > 6 {
-                            tokens.push(Token::Invalid(format!(
-                                "Unicode escape sequence '{}' is too long",
-                                char_buffer
-                            )));
-                            continue;
-                        }
-                        if let Ok(code_point) = u32::from_str_radix(hex_str, 16) {
-                            if let Some(parsed_char) = char::from_u32(code_point) {
-                                tokens.push(Token::CharLiteral(parsed_char));
-                                continue;
-                            } else {
-                                tokens.push(Token::Invalid(format!(
-                                    "Invalid unicode code point: '{}'",
-                                    char_buffer
-                                )));
-                                continue;
-                            }
-                        } else {
-                            tokens.push(Token::Invalid(format!(
-                                "Invalid unicode escape sequence: '{}'",
-                                char_buffer
-                            )));
-                            continue;
-                        }
-                    } else {
-                        tokens.push(Token::Invalid(format!(
-                            "Invalid escape sequence: '{}'",
-                            char_buffer
-                        )));
-                        continue;
-                    }
-                } else if char_buffer.len() == 1 {
-                    // NOTE: it's safe to unwrap here, right?
-                    let char = char_buffer.chars().next().unwrap();
-
-                    tokens.push(Token::CharLiteral(char));
-                } else {
-                    tokens.push(Token::Invalid(format!(
-                        "Character literal '{}' must be one character long",
-                        char_buffer
-                    )));
-                }
-            }
+            '"' => tokens.push(lex_string_literal(&mut chars)),
+            '\'' => tokens.push(lex_char_literal(&mut chars)),
 
             c => {
                 // handle number literals
