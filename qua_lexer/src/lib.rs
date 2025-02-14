@@ -55,261 +55,277 @@ pub enum Token {
     Invalid(String),
 }
 
-/// Lexes a string literal
-fn lex_string_literal(chars: &mut Peekable<Chars>) -> Token {
-    // we create an empty string buffer in which we'll put
-    // the contents (excluding the quotes) of our string
-    let mut string_buffer = String::default();
+pub struct Lexer<'a> {
+    chars: Peekable<Chars<'a>>,
+    pub source: &'a str,
+}
 
-    let mut closed = false;
-
-    while let Some(c2) = chars.next() {
-        match c2 {
-            '"' => {
-                closed = true;
-                break;
-            }
-            c2 => string_buffer.push(c2),
+impl<'a> Lexer<'a> {
+    pub fn new(source: &'a str) -> Self {
+        Self {
+            chars: source.chars().peekable(),
+            source,
         }
-    }
-
-    match closed {
-        true => Token::StringLiteral(string_buffer),
-        false => Token::Invalid("Invalid expression".to_string()),
     }
 }
 
-/// Lexes a character literal
-fn lex_char_literal(chars: &mut Peekable<Chars>) -> Token {
-    // we create an empty string buffer in which we'll put
-    // the contents (excluding the quotes) of our character
-    //
-    // does that sound weird? well after reading we want to
-    // ensure that inside this buffer there's *only* one
-    // character, and we want to be able to report the
-    // whole contents of whatever is in it otherwise.
-    //
-    // also, when i implement unicode support, multiple
-    // characters *will* actually be needed here.
-    let mut char_buffer = String::default();
-    let mut closed = false;
+impl Lexer<'_> {
+    fn lex_string_literal(&mut self) -> Token {
+        // we create an empty string buffer in which we'll put
+        // the contents (excluding the quotes) of our string
+        let mut string_buffer = String::default();
 
-    while let Some(c2) = chars.next() {
-        match c2 {
-            '\'' => {
-                closed = true;
-                break;
+        let mut closed = false;
+
+        while let Some(c2) = self.chars.next() {
+            match c2 {
+                '"' => {
+                    closed = true;
+                    break;
+                }
+                c2 => string_buffer.push(c2),
             }
-            c2 => char_buffer.push(c2),
+        }
+
+        match closed {
+            true => Token::StringLiteral(string_buffer),
+            false => Token::Invalid("Invalid expression".to_string()),
         }
     }
 
-    if !closed {
-        return Token::Invalid("Invalid expression".to_string());
-    }
+    /// Lexes a character literal
+    fn lex_char_literal(&mut self) -> Token {
+        // we create an empty string buffer in which we'll put
+        // the contents (excluding the quotes) of our character
+        //
+        // does that sound weird? well after reading we want to
+        // ensure that inside this buffer there's *only* one
+        // character, and we want to be able to report the
+        // whole contents of whatever is in it otherwise.
+        //
+        // also, when i implement unicode support, multiple
+        // characters *will* actually be needed here.
+        let mut char_buffer = String::default();
+        let mut closed = false;
 
-    if char_buffer.len() > 1 && char_buffer.starts_with('\\') {
-        if char_buffer.starts_with("\\u{") && char_buffer.ends_with('}') {
-            let hex_str = &char_buffer[3..char_buffer.len() - 1];
-            if hex_str.len() > 6 {
-                return Token::Invalid(format!(
-                    "Unicode escape sequence '{}' is too long",
-                    char_buffer
-                ));
+        while let Some(c2) = self.chars.next() {
+            match c2 {
+                '\'' => {
+                    closed = true;
+                    break;
+                }
+                c2 => char_buffer.push(c2),
             }
-            if let Ok(code_point) = u32::from_str_radix(hex_str, 16) {
-                if let Some(parsed_char) = char::from_u32(code_point) {
-                    return Token::CharLiteral(parsed_char);
+        }
+
+        if !closed {
+            return Token::Invalid("Invalid expression".to_string());
+        }
+
+        if char_buffer.len() > 1 && char_buffer.starts_with('\\') {
+            if char_buffer.starts_with("\\u{") && char_buffer.ends_with('}') {
+                let hex_str = &char_buffer[3..char_buffer.len() - 1];
+                if hex_str.len() > 6 {
+                    return Token::Invalid(format!(
+                        "Unicode escape sequence '{}' is too long",
+                        char_buffer
+                    ));
+                }
+                if let Ok(code_point) = u32::from_str_radix(hex_str, 16) {
+                    if let Some(parsed_char) = char::from_u32(code_point) {
+                        return Token::CharLiteral(parsed_char);
+                    } else {
+                        return Token::Invalid(format!(
+                            "Invalid unicode code point: '{}'",
+                            char_buffer
+                        ));
+                    }
                 } else {
                     return Token::Invalid(format!(
-                        "Invalid unicode code point: '{}'",
+                        "Invalid unicode escape sequence: '{}'",
                         char_buffer
                     ));
                 }
             } else {
-                return Token::Invalid(format!(
-                    "Invalid unicode escape sequence: '{}'",
-                    char_buffer
-                ));
+                return Token::Invalid(format!("Invalid escape sequence: '{}'", char_buffer));
             }
+        } else if char_buffer.len() == 1 {
+            // NOTE: it's safe to unwrap here, right?
+            let char = char_buffer.chars().next().unwrap();
+
+            return Token::CharLiteral(char);
         } else {
-            return Token::Invalid(format!("Invalid escape sequence: '{}'", char_buffer));
-        }
-    } else if char_buffer.len() == 1 {
-        // NOTE: it's safe to unwrap here, right?
-        let char = char_buffer.chars().next().unwrap();
-
-        return Token::CharLiteral(char);
-    } else {
-        return Token::Invalid(format!(
-            "Character literal '{}' must be one character long",
-            char_buffer
-        ));
-    }
-}
-
-/// Lexes a number literal, given its first character
-pub fn lex_number_literal(chars: &mut Peekable<Chars>, first_char: char) -> Token {
-    // we initialize a string buffer for our number with the
-    // character we've just read, which is the first digit
-    // let mut num_buffer = String::from(c);
-
-    let mut num_buffer: Vec<u8> = Vec::with_capacity(10);
-    num_buffer.push(first_char as u8);
-
-    // this is a counter for keeping track of how many decimal
-    // points we've read.
-    // (that doesn't mean they won't appear in the buffer)
-    let mut decimal_points: usize = 0;
-
-    loop {
-        // consume the next character, ONLY if it is a digit or a
-        // decimal point
-        match chars.next_if(|x| x.is_digit(10) || x == &'.') {
-            Some(c2) => {
-                // if the character is a decimal point, we increase
-                // the counter.
-                if c2 == '.' {
-                    decimal_points += 1;
-                }
-
-                // if it's a digit, we just add it to the buffer
-                // num_buffer += &c2.to_string();
-                num_buffer.push(c2 as u8);
-            }
-
-            // if the next character isn't a digit or decimal
-            // point, we break out of this loop and finalize the
-            // token.
-            None => break,
+            return Token::Invalid(format!(
+                "Character literal '{}' must be one character long",
+                char_buffer
+            ));
         }
     }
 
-    // NOTE: can we skip this? (we'd have to change the way
-    // which we store the numbers too)
-    let num_string = String::from_utf8(num_buffer)
-        .expect("couldn't convert num literal to utf8 string (not read properly)");
+    /// Lexes a number literal, given its first character
+    pub fn lex_number_literal(&mut self, first_char: char) -> Token {
+        // we initialize a string buffer for our number with the
+        // character we've just read, which is the first digit
+        // let mut num_buffer = String::from(c);
 
-    // if we've read up to 1 decimal point, the number is (probably) fine and
-    // we can parse it as a number using rust's std library
-    if decimal_points <= 1 {
-        // if we don't have *any* decimal points, we parse it as an integer
-        if decimal_points == 0 {
-            match num_string.parse::<u32>() {
-                Ok(num) => return Token::IntLiteral(num),
-                Err(_) => return Token::Invalid(num_string),
-            }
-        } else {
-            // if we *do* have a decimal point, we parse it as a float
-            match num_string.parse::<f32>() {
-                Ok(num) => return Token::FloatLiteral(num),
-                Err(_) => return Token::Invalid(num_string),
-            }
-        }
-    } else {
-        // if there's more than one decimal point, we can now
-        // emit an invalid token
-        Token::Invalid(num_string)
-    }
-}
+        let mut num_buffer: Vec<u8> = Vec::with_capacity(10);
+        num_buffer.push(first_char as u8);
 
-/// Lexes an identifier
-fn lex_identifier(chars: &mut Peekable<Chars>, first_char: char) -> Token {
-    let mut ident_buf = String::from(first_char);
+        // this is a counter for keeping track of how many decimal
+        // points we've read.
+        // (that doesn't mean they won't appear in the buffer)
+        let mut decimal_points: usize = 0;
 
-    loop {
-        match chars.next_if(|x| x.is_alphanumeric() || x == &'_') {
-            Some(c2) => ident_buf += &c2.to_string(),
-            None => return Token::Identifier(ident_buf),
-        }
-    }
-}
-
-macro_rules! multi_char {
-    ($chars:expr, $next_char:expr, $single:expr, $multi:expr) => {
-        if let Some(_) = $chars.next_if_eq(&$next_char) {
-            $multi
-        } else {
-            $single
-        }
-    };
-}
-
-/// Lexically analyzes a Qua file's textual contents
-#[test_fuzz::test_fuzz]
-pub fn lex(source: String) -> Vec<Token> {
-    let mut tokens: Vec<Token> = vec![];
-
-    // state
-    let mut chars = source.chars().peekable();
-
-    while let Some(c) = chars.next() {
-        match c {
-            '\n' | '\t' | '\r' | ' ' => continue,
-
-            '(' => tokens.push(Token::OpenParen),
-            ')' => tokens.push(Token::CloseParen),
-
-            '{' => tokens.push(Token::OpenBrace),
-            '}' => tokens.push(Token::CloseBrace),
-
-            '[' => tokens.push(Token::OpenBracket),
-            ']' => tokens.push(Token::CloseBracket),
-
-            ';' => tokens.push(Token::Semicolon),
-            ',' => tokens.push(Token::Comma),
-            '.' => tokens.push(Token::Period),
-
-            '&' => tokens.push(multi_char!(
-                chars,
-                '&',
-                Token::Invalid(String::from("&")),
-                Token::And
-            )),
-
-            '|' => tokens.push(multi_char!(
-                chars,
-                '|',
-                Token::Invalid(String::from("|")),
-                Token::Or
-            )),
-
-            '!' => tokens.push(multi_char!(chars, '=', Token::Not, Token::NotEquals)),
-            '=' => tokens.push(multi_char!(chars, '=', Token::Equals, Token::EqualsEquals)),
-            '>' => tokens.push(multi_char!(chars, '=', Token::Greater, Token::GreaterEq)),
-            '<' => tokens.push(multi_char!(chars, '=', Token::Lesser, Token::LesserEq)),
-            '+' => tokens.push(multi_char!(chars, '+', Token::Plus, Token::PlusPlus)),
-            '-' => tokens.push(multi_char!(chars, '-', Token::Minus, Token::MinusMinus)),
-
-            '/' => {
-                if let Some(_) = chars.next_if_eq(&'/') {
-                    // read until we get to a newline
-                    while let Some(c2) = chars.next() {
-                        if c2 == '\n' {
-                            break;
-                        }
+        loop {
+            // consume the next character, ONLY if it is a digit or a
+            // decimal point
+            match self.chars.next_if(|x| x.is_digit(10) || x == &'.') {
+                Some(c2) => {
+                    // if the character is a decimal point, we increase
+                    // the counter.
+                    if c2 == '.' {
+                        decimal_points += 1;
                     }
 
-                // } else if let Some(_) = chars.next_if_eq(&'*') {
-                } else {
-                    tokens.push(Token::Slash)
+                    // if it's a digit, we just add it to the buffer
+                    // num_buffer += &c2.to_string();
+                    num_buffer.push(c2 as u8);
+                }
+
+                // if the next character isn't a digit or decimal
+                // point, we break out of this loop and finalize the
+                // token.
+                None => break,
+            }
+        }
+
+        // NOTE: can we skip this? (we'd have to change the way
+        // which we store the numbers too)
+        let num_string = String::from_utf8(num_buffer)
+            .expect("couldn't convert num literal to utf8 string (not read properly)");
+
+        // if we've read up to 1 decimal point, the number is (probably) fine and
+        // we can parse it as a number using rust's std library
+        if decimal_points <= 1 {
+            // if we don't have *any* decimal points, we parse it as an integer
+            if decimal_points == 0 {
+                match num_string.parse::<u32>() {
+                    Ok(num) => return Token::IntLiteral(num),
+                    Err(_) => return Token::Invalid(num_string),
+                }
+            } else {
+                // if we *do* have a decimal point, we parse it as a float
+                match num_string.parse::<f32>() {
+                    Ok(num) => return Token::FloatLiteral(num),
+                    Err(_) => return Token::Invalid(num_string),
                 }
             }
-            '*' => tokens.push(Token::Asterisk),
-            '%' => tokens.push(Token::Percent),
-
-            '"' => tokens.push(lex_string_literal(&mut chars)),
-            '\'' => tokens.push(lex_char_literal(&mut chars)),
-
-            '0'..='9' => tokens.push(lex_number_literal(&mut chars, c)),
-
-            'A'..='Z' | 'a'..='z' | '_' => tokens.push(lex_identifier(&mut chars, c)),
-
-            _ => tokens.push(Token::Invalid(c.to_string())),
+        } else {
+            // if there's more than one decimal point, we can now
+            // emit an invalid token
+            Token::Invalid(num_string)
         }
     }
 
-    tokens.push(Token::EOF);
+    /// Lexes an identifier
+    fn lex_identifier(&mut self, first_char: char) -> Token {
+        let mut ident_buf = String::from(first_char);
+
+        loop {
+            match self.chars.next_if(|x| x.is_alphanumeric() || x == &'_') {
+                Some(c2) => ident_buf += &c2.to_string(),
+                None => return Token::Identifier(ident_buf),
+            }
+        }
+    }
+
+    pub fn next_token(&mut self) -> Token {
+        while let Some(c) = self.chars.next() {
+            match c {
+                '\n' | '\t' | '\r' | ' ' => continue,
+
+                '(' => return Token::OpenParen,
+                ')' => return Token::CloseParen,
+
+                '{' => return Token::OpenBrace,
+                '}' => return Token::CloseBrace,
+
+                '[' => return Token::OpenBracket,
+                ']' => return Token::CloseBracket,
+
+                ';' => return Token::Semicolon,
+                ',' => return Token::Comma,
+                '.' => return Token::Period,
+
+                '&' => return self.multi_char('&', Token::Invalid(String::from("&")), Token::And),
+
+                '|' => return self.multi_char('|', Token::Invalid(String::from("|")), Token::Or),
+
+                '!' => return self.multi_char('=', Token::Not, Token::NotEquals),
+                '=' => return self.multi_char('=', Token::Equals, Token::EqualsEquals),
+                '>' => return self.multi_char('=', Token::Greater, Token::GreaterEq),
+                '<' => return self.multi_char('=', Token::Lesser, Token::LesserEq),
+                '+' => return self.multi_char('+', Token::Plus, Token::PlusPlus),
+                '-' => return self.multi_char('-', Token::Minus, Token::MinusMinus),
+
+                '/' => {
+                    if let Some(_) = self.chars.next_if_eq(&'/') {
+                        // read until we get to a newline
+                        while let Some(c2) = self.chars.next() {
+                            if c2 == '\n' {
+                                break;
+                            }
+                        }
+                        continue;
+
+                    // } else if let Some(_) = chars.next_if_eq(&'*') {
+                    } else {
+                        return Token::Slash;
+                    }
+                }
+                '*' => return Token::Asterisk,
+                '%' => return Token::Percent,
+
+                '"' => return self.lex_string_literal(),
+                '\'' => return self.lex_char_literal(),
+
+                '0'..='9' => return self.lex_number_literal(c),
+
+                'A'..='Z' | 'a'..='z' | '_' => return self.lex_identifier(c),
+
+                _ => return Token::Invalid(c.to_string()),
+            }
+        }
+
+        Token::EOF
+    }
+
+    fn multi_char(&mut self, next_char: char, single: Token, multi: Token) -> Token {
+        if let Some(_) = self.chars.next_if_eq(&next_char) {
+            multi
+        } else {
+            single
+        }
+    }
+}
+
+/// Helper function to create a lexer and lex a source, and return all tokens.
+#[test_fuzz::test_fuzz]
+pub fn lex(source: &str) -> Vec<Token> {
+    let mut lexer = Lexer::new(source);
+    let mut tokens = vec![];
+
+    loop {
+        let token = lexer.next_token();
+
+        if token == Token::EOF {
+            tokens.push(token);
+            break;
+        }
+
+        tokens.push(token);
+    }
+
     tokens
 }
 
@@ -319,14 +335,14 @@ mod tests {
 
     macro_rules! assert_tokens_eq {
         ($input:expr, $expected:expr) => {
-            let result = lex($input.to_string());
+            let result = lex($input);
             assert_eq!(result, $expected, "Input: `{}`", $input);
         };
     }
 
     macro_rules! assert_tokens_ne {
         ($input:expr, $expected:expr) => {
-            let result = lex($input.to_string());
+            let result = lex($input);
             assert_ne!(result, $expected, "Input: `{}`", $input);
         };
     }
