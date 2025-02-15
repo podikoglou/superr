@@ -418,18 +418,23 @@ mod tests {
         assert_identifier_correct_lexing_ne!("!Qua__");
         assert_identifier_correct_lexing_ne!("*qua");
 
-        // qua keywords
-        assert_identifier_correct_lexing_eq!("for");
-        assert_identifier_correct_lexing_eq!("in");
-        assert_identifier_correct_lexing_eq!("if");
-        assert_identifier_correct_lexing_eq!("else");
-        assert_identifier_correct_lexing_eq!("while");
-        assert_identifier_correct_lexing_eq!("range");
-
-        assert_identifier_correct_lexing_eq!("int");
-        assert_identifier_correct_lexing_eq!("string");
-
         assert_identifier_correct_lexing_eq!("print");
+        assert_identifier_correct_lexing_eq!("range");
+    }
+
+    #[test]
+    fn test_keyword() {
+        assert_tokens_eq!("if", vec![Token::Keyword(Keyword::If), Token::EOF]);
+        assert_tokens_eq!("else", vec![Token::Keyword(Keyword::Else), Token::EOF]);
+        assert_tokens_eq!("for", vec![Token::Keyword(Keyword::For), Token::EOF]);
+        assert_tokens_eq!("while", vec![Token::Keyword(Keyword::While), Token::EOF]);
+        assert_tokens_eq!("return", vec![Token::Keyword(Keyword::Return), Token::EOF]);
+        assert_tokens_eq!("break", vec![Token::Keyword(Keyword::Break), Token::EOF]);
+        assert_tokens_eq!(
+            "continue",
+            vec![Token::Keyword(Keyword::Continue), Token::EOF]
+        );
+        assert_tokens_eq!("in", vec![Token::Keyword(Keyword::In), Token::EOF]);
     }
 
     #[test]
