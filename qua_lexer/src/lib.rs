@@ -4,7 +4,8 @@ use std::{char, iter::Peekable, str::Chars};
 //  +=, *=, /=
 #[derive(Debug, PartialEq)]
 pub enum Token {
-    Identifier(String), // factorial, for, int
+    Identifier(String), // factorial, x
+    Keyword(Keyword),   // for, in, int, return
 
     // Literals
     IntLiteral(u32),       // 21
@@ -53,6 +54,18 @@ pub enum Token {
     // Special
     EOF,
     Invalid(String),
+}
+
+#[derive(PartialEq, Debug)]
+pub enum Keyword {
+    If,
+    Else,
+    For,
+    While,
+    Return,
+    Break,
+    Continue,
+    In,
 }
 
 pub struct Lexer<'a> {
@@ -234,8 +247,22 @@ impl Lexer<'_> {
         loop {
             match self.chars.next_if(|x| x.is_alphanumeric() || x == &'_') {
                 Some(c2) => ident_buf += &c2.to_string(),
-                None => return Token::Identifier(ident_buf),
+                None => break,
             }
+        }
+
+        // NOTE: a map might be faster
+        match ident_buf.as_str() {
+            "if" => Token::Keyword(Keyword::If),
+            "else" => Token::Keyword(Keyword::Else),
+            "for" => Token::Keyword(Keyword::For),
+            "while" => Token::Keyword(Keyword::While),
+            "return" => Token::Keyword(Keyword::Return),
+            "break" => Token::Keyword(Keyword::Break),
+            "continue" => Token::Keyword(Keyword::Continue),
+            "in" => Token::Keyword(Keyword::In),
+
+            _ => Token::Identifier(ident_buf),
         }
     }
 
