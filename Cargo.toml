@@ -5,5 +5,6 @@ members = [
     "superr_optimizers",
     "superr",
     "superr_inspect",
-    "qua_lexer"
+    "qua_lexer",
+    "qua_parser"
 ]
