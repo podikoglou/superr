@@ -8,4 +8,8 @@ int factorial(int x) {
     return y;
 }
 
-print("factorial(5) = {}\n", factorial(5));
+int main() {
+    print("factorial(5) = {}\n", factorial(5));
+
+    return 0;
+}
