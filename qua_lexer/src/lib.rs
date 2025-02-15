@@ -2,6 +2,7 @@ use std::{char, iter::Peekable, str::Chars};
 
 // TODO:
 //  +=, *=, /=
+//  true, false (?)
 #[derive(Debug, PartialEq)]
 pub enum Token {
     Identifier(String), // factorial, x
