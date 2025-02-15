@@ -6,9 +6,10 @@ use superr_vm::{instruction::Instruction, program::Program, vm::VM};
 pub fn execute(matches: &ArgMatches) -> anyhow::Result<()> {
     let input = matches
         .get_one::<FileOrStdin>("input")
-        .context("couldn't get input")?;
+        .context("couldn't get input")?
+        .clone();
 
-    let contents = input.clone().contents().context("couldn't read input")?;
+    let contents = input.contents().context("couldn't read input")?;
 
     let mut program = Program::new();
 
