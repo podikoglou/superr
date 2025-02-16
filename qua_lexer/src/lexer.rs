@@ -190,7 +190,7 @@ impl Lexer<'_> {
 
         loop {
             match self.chars.next_if(|x| x.is_alphanumeric() || x == &'_') {
-                Some(c2) => ident_buf += &c2.to_string(),
+                Some(c2) => ident_buf.push(c2),
                 None => break,
             }
         }
