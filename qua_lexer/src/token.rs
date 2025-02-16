@@ -1,3 +1,5 @@
+use crate::keyword::Keyword;
+
 // TODO:
 //  +=, *=, /=
 //  true, false (?)
@@ -53,16 +55,4 @@ pub enum Token {
     // Special
     EOF,
     Invalid(String),
-}
-
-#[derive(PartialEq, Debug)]
-pub enum Keyword {
-    If,
-    Else,
-    For,
-    While,
-    Return,
-    Break,
-    Continue,
-    In,
 }

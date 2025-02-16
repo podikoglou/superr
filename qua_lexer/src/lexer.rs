@@ -1,6 +1,6 @@
 use std::{char, iter::Peekable, str::Chars};
 
-use crate::token::{Keyword, Token};
+use crate::{keyword, keyword::Keyword, token::Token};
 
 pub struct Lexer<'a> {
     chars: Peekable<Chars<'a>>,
@@ -186,18 +186,9 @@ impl Lexer<'_> {
             }
         }
 
-        // NOTE: a map might be faster
-        match ident_buf.as_str() {
-            "if" => Token::Keyword(Keyword::If),
-            "else" => Token::Keyword(Keyword::Else),
-            "for" => Token::Keyword(Keyword::For),
-            "while" => Token::Keyword(Keyword::While),
-            "return" => Token::Keyword(Keyword::Return),
-            "break" => Token::Keyword(Keyword::Break),
-            "continue" => Token::Keyword(Keyword::Continue),
-            "in" => Token::Keyword(Keyword::In),
-
-            _ => Token::Identifier(ident_buf),
+        match keyword::lookup(&ident_buf) {
+            Some(keyword) => Token::Keyword(keyword),
+            None => Token::Identifier(ident_buf),
         }
     }
 
