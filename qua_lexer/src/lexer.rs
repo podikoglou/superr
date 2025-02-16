@@ -17,6 +17,8 @@ impl<'a> Lexer<'a> {
 }
 
 impl Lexer<'_> {
+    /// Reads a string literal from the input, returning [`Token::Invalid`]
+    /// if the string is not a valid string literal.
     fn lex_string_literal(&mut self) -> Token {
         // we create an empty string buffer in which we'll put
         // the contents (excluding the quotes) of our string
@@ -40,7 +42,10 @@ impl Lexer<'_> {
         }
     }
 
-    /// Lexes a character literal
+    /// Reads a character literal from the input, returning [`Token::Invalid`]
+    /// if the character is not a valid character literal.
+    ///
+    /// Unicode code points are supported.
     fn lex_char_literal(&mut self) -> Token {
         // we create an empty string buffer in which we'll put
         // the contents (excluding the quotes) of our character
@@ -109,8 +114,11 @@ impl Lexer<'_> {
         }
     }
 
-    /// Lexes a number literal, given its first character
-    pub fn lex_number_literal(&mut self, first_char: char) -> Token {
+    /// Reads a number literal from the input, returning a [`Token::IntLiteral`]
+    /// if the number contains no decimal point, and was successfully parsed as an [`u32`].
+    ///
+    /// Sign is ignored -- it's a separate token.
+    fn lex_number_literal(&mut self, first_char: char) -> Token {
         // we initialize a string buffer for our number with the
         // character we've just read, which is the first digit
         // let mut num_buffer = String::from(c);
@@ -174,7 +182,9 @@ impl Lexer<'_> {
         }
     }
 
-    /// Lexes an identifier
+    /// Reads an identifier from the input (given its first character),
+    /// returning a [`Token::Keyword`] token if the identifier is a keyword, or
+    /// a [`Token::Identifier`] otherwise.
     fn lex_identifier(&mut self, first_char: char) -> Token {
         let mut ident_buf = String::from(first_char);
 
@@ -200,7 +210,7 @@ impl Lexer<'_> {
         }
     }
 
-    /// Helper function to recognize a multi-character token or fallback to a single-character token
+    /// Chooses the next token based on the next character of the input.
     fn multi_char(&mut self, next_char: char, single: Token, multi: Token) -> Token {
         if let Some(_) = self.chars.next_if_eq(&next_char) {
             multi
@@ -209,6 +219,10 @@ impl Lexer<'_> {
         }
     }
 
+    /// Reads the next token from the input, returning [`Token::Invalid`] for
+    /// invalid tokens.
+    ///
+    /// Whitespace and newlines are skipped.
     pub fn next_token(&mut self) -> Token {
         while let Some(c) = self.chars.next() {
             match c {
