@@ -121,10 +121,7 @@ impl Lexer<'_> {
     fn lex_number_literal(&mut self, first_char: char) -> Token {
         // we initialize a string buffer for our number with the
         // character we've just read, which is the first digit
-        // let mut num_buffer = String::from(c);
-
-        let mut num_buffer: Vec<u8> = Vec::with_capacity(10);
-        num_buffer.push(first_char as u8);
+        let mut num_buffer = String::from(first_char);
 
         // this is a counter for keeping track of how many decimal
         // points we've read.
@@ -143,8 +140,7 @@ impl Lexer<'_> {
                     }
 
                     // if it's a digit, we just add it to the buffer
-                    // num_buffer += &c2.to_string();
-                    num_buffer.push(c2 as u8);
+                    num_buffer.push(c2);
                 }
 
                 // if the next character isn't a digit or decimal
@@ -154,31 +150,26 @@ impl Lexer<'_> {
             }
         }
 
-        // NOTE: can we skip this? (we'd have to change the way
-        // which we store the numbers too)
-        let num_string = String::from_utf8(num_buffer)
-            .expect("couldn't convert num literal to utf8 string (not read properly)");
-
         // if we've read up to 1 decimal point, the number is (probably) fine and
         // we can parse it as a number using rust's std library
         if decimal_points <= 1 {
             // if we don't have *any* decimal points, we parse it as an integer
             if decimal_points == 0 {
-                match num_string.parse::<u32>() {
+                match num_buffer.parse::<u32>() {
                     Ok(num) => return Token::IntLiteral(num),
-                    Err(_) => return Token::Invalid(num_string),
+                    Err(_) => return Token::Invalid(num_buffer),
                 }
             } else {
                 // if we *do* have a decimal point, we parse it as a float
-                match num_string.parse::<f32>() {
+                match num_buffer.parse::<f32>() {
                     Ok(num) => return Token::FloatLiteral(num),
-                    Err(_) => return Token::Invalid(num_string),
+                    Err(_) => return Token::Invalid(num_buffer),
                 }
             }
         } else {
             // if there's more than one decimal point, we can now
             // emit an invalid token
-            Token::Invalid(num_string)
+            Token::Invalid(num_buffer)
         }
     }
 
