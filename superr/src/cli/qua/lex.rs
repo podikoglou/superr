@@ -1,6 +1,7 @@
 use anyhow::Context;
 use clap::ArgMatches;
 use clap_stdin::FileOrStdin;
+use qua_lexer::lexer::lex;
 
 pub fn execute(matches: &ArgMatches) -> anyhow::Result<()> {
     let input = matches
@@ -10,7 +11,7 @@ pub fn execute(matches: &ArgMatches) -> anyhow::Result<()> {
 
     let contents = input.contents().context("couldn't read input")?;
 
-    dbg!(qua_lexer::lex(&contents));
+    dbg!(lex(&contents));
 
     Ok(())
 }
