@@ -1,7 +1,0 @@
-[package]
-name = "qua_parser"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-qua_lexer = { path = "../qua_lexer/" }

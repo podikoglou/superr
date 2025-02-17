@@ -2629,19 +2629,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "afbdc74edc00b6f6a218ca6a5364d6226a259d4b8ea1af4a0ea063f27e179f4d"
 
 [[package]]
+name = "qua_ast"
+version = "0.1.0"
+
+[[package]]
 name = "qua_lexer"
 version = "0.1.0"
 dependencies = [
  "phf",
  "serde",
  "test-fuzz",
-]
-
-[[package]]
-name = "qua_parser"
-version = "0.1.0"
-dependencies = [
- "qua_lexer",
 ]
 
 [[package]]
