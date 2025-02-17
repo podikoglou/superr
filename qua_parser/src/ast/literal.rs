@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub enum Literal {
     String(String),
     Char(char),

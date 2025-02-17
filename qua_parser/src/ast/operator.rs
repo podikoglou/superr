@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub enum BinaryOperator {
     And,
     Or,
@@ -16,6 +17,8 @@ pub enum BinaryOperator {
     Multiply,
     // TODO: % and eventually ^
 }
+
+#[derive(Debug)]
 pub enum UnaryOperator {
     Not,
     Minus,
