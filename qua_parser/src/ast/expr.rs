@@ -1,7 +1,4 @@
-use super::{
-    literal::Literal,
-    operator::{BinaryOperator, UnaryOperator},
-};
+use super::literal::Literal;
 
 #[derive(Debug)]
 pub enum Expr {
@@ -13,14 +10,30 @@ pub enum Expr {
 pub type ExprBox = Box<Expr>;
 
 #[derive(Debug)]
-pub struct BinaryExpr {
-    pub left: ExprBox,
-    pub right: ExprBox,
-    pub operator: BinaryOperator,
+pub enum BinaryExpr {
+    // Logical operators
+    And(ExprBox, ExprBox),
+    Or(ExprBox, ExprBox),
+
+    // Comparison operators
+    Equals(ExprBox, ExprBox),
+    NotEquals(ExprBox, ExprBox),
+
+    Greater(ExprBox, ExprBox),
+    GreaterEqual(ExprBox, ExprBox),
+
+    Less(ExprBox, ExprBox),
+    LessEqual(ExprBox, ExprBox),
+
+    // Arithmetic operators
+    Add(ExprBox, ExprBox),
+    Subtract(ExprBox, ExprBox),
+    Multiply(ExprBox, ExprBox),
+    Divide(ExprBox, ExprBox),
 }
 
 #[derive(Debug)]
-pub struct UnaryExpr {
-    pub operator: UnaryOperator,
-    pub right: ExprBox,
+pub enum UnaryExpr {
+    Not(ExprBox),
+    Minus(ExprBox),
 }
