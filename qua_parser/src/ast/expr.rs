@@ -1,6 +1,6 @@
 use super::literal::Literal;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     Binary(BinaryExpr),
     Unary(UnaryExpr),
@@ -9,7 +9,7 @@ pub enum Expr {
 
 pub type ExprBox = Box<Expr>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum BinaryExpr {
     // Logical operators
     And(ExprBox, ExprBox),
@@ -32,7 +32,7 @@ pub enum BinaryExpr {
     Divide(ExprBox, ExprBox),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum UnaryExpr {
     Not(ExprBox),
     Minus(ExprBox),
