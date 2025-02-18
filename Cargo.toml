@@ -1,10 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
-    "superr_vm",
-    "superr_optimizers",
-    "superr",
-    "superr_inspect",
-    "qua_lexer",
-    "qua_ast", "qua_parser",
+    "crates/superr_vm",
+    "crates/superr_optimizers",
+    "crates/superr",
+    "crates/superr_inspect",
+    "crates/qua_lexer",
+    "crates/qua_ast",
+    "crates/qua_parser"
 ]
