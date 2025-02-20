@@ -1,5 +1,9 @@
 use crate::{address::MemoryAddress, vm::MemValue};
 
+// This instruction set (along with the assembly format) is heavily based on the one in the below
+// project:
+//
+// https://github.com/AZHenley/superoptimizer
 #[derive(Debug, Clone, PartialEq, PartialOrd, Copy, Eq, Hash)]
 pub enum Instruction {
     Load(MemValue),
