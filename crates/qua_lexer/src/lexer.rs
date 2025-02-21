@@ -26,7 +26,7 @@ impl Lexer<'_> {
 
         let mut closed = false;
 
-        while let Some(c2) = self.chars.next() {
+        for c2 in &mut self.chars {
             match c2 {
                 '"' => {
                     closed = true;
@@ -60,7 +60,7 @@ impl Lexer<'_> {
         let mut char_buffer = String::default();
         let mut closed = false;
 
-        while let Some(c2) = self.chars.next() {
+        for c2 in &mut self.chars {
             match c2 {
                 '\'' => {
                     closed = true;
@@ -237,7 +237,7 @@ impl Lexer<'_> {
                 '/' => {
                     if let Some(_) = self.chars.next_if_eq(&'/') {
                         // read until we get to a newline
-                        while let Some(c2) = self.chars.next() {
+                        for c2 in &mut self.chars {
                             if c2 == '\n' {
                                 break;
                             }
