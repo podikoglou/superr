@@ -1,6 +1,6 @@
 use std::{char, iter::Peekable, str::Chars};
 
-use crate::{keyword, keyword::Keyword, token::Token};
+use crate::{keyword, token::Token};
 
 pub struct Lexer<'a> {
     chars: Peekable<Chars<'a>>,
@@ -290,6 +290,7 @@ pub fn lex(source: &str) -> Vec<Token> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use super::keyword::Keyword;
 
     macro_rules! assert_tokens_eq {
         ($input:expr, $expected:expr) => {
