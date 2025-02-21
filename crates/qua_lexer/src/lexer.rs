@@ -131,7 +131,7 @@ impl Lexer<'_> {
         loop {
             // consume the next character, ONLY if it is a digit or a
             // decimal point
-            match self.chars.next_if(|x| x.is_digit(10) || x == &'.') {
+            match self.chars.next_if(|x| x.is_ascii_digit() || x == &'.') {
                 Some(c2) => {
                     // if the character is a decimal point, we increase
                     // the counter.
