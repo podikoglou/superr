@@ -194,7 +194,7 @@ impl Lexer<'_> {
 
     /// Chooses the next token based on the next character of the input.
     fn multi_char(&mut self, next_char: char, single: Token, multi: Token) -> Token {
-        if let Some(_) = self.chars.next_if_eq(&next_char) {
+        if self.chars.next_if_eq(&next_char).is_some() {
             multi
         } else {
             single
@@ -235,7 +235,7 @@ impl Lexer<'_> {
                 '-' => return self.multi_char('-', Token::Minus, Token::MinusMinus),
 
                 '/' => {
-                    if let Some(_) = self.chars.next_if_eq(&'/') {
+                    if self.chars.next_if_eq(&'/').is_some() {
                         // read until we get to a newline
                         for c2 in &mut self.chars {
                             if c2 == '\n' {
