@@ -85,32 +85,32 @@ impl Lexer<'_> {
                 }
                 if let Ok(code_point) = u32::from_str_radix(hex_str, 16) {
                     if let Some(parsed_char) = char::from_u32(code_point) {
-                        return Token::CharLiteral(parsed_char);
+                        Token::CharLiteral(parsed_char)
                     } else {
-                        return Token::Invalid(format!(
+                        Token::Invalid(format!(
                             "Invalid unicode code point: '{}'",
                             char_buffer
-                        ));
+                        ))
                     }
                 } else {
-                    return Token::Invalid(format!(
+                    Token::Invalid(format!(
                         "Invalid unicode escape sequence: '{}'",
                         char_buffer
-                    ));
+                    ))
                 }
             } else {
-                return Token::Invalid(format!("Invalid escape sequence: '{}'", char_buffer));
+                Token::Invalid(format!("Invalid escape sequence: '{}'", char_buffer))
             }
         } else if char_buffer.len() == 1 {
             // NOTE: it's safe to unwrap here, right?
             let char = char_buffer.chars().next().unwrap();
 
-            return Token::CharLiteral(char);
+            Token::CharLiteral(char)
         } else {
-            return Token::Invalid(format!(
+            Token::Invalid(format!(
                 "Character literal '{}' must be one character long",
                 char_buffer
-            ));
+            ))
         }
     }
 
@@ -156,14 +156,14 @@ impl Lexer<'_> {
             // if we don't have *any* decimal points, we parse it as an integer
             if decimal_points == 0 {
                 match num_buffer.parse::<u32>() {
-                    Ok(num) => return Token::IntLiteral(num),
-                    Err(_) => return Token::Invalid(num_buffer),
+                    Ok(num) => Token::IntLiteral(num),
+                    Err(_) => Token::Invalid(num_buffer),
                 }
             } else {
                 // if we *do* have a decimal point, we parse it as a float
                 match num_buffer.parse::<f32>() {
-                    Ok(num) => return Token::FloatLiteral(num),
-                    Err(_) => return Token::Invalid(num_buffer),
+                    Ok(num) => Token::FloatLiteral(num),
+                    Err(_) => Token::Invalid(num_buffer),
                 }
             }
         } else {
