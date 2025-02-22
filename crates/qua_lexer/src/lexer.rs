@@ -346,6 +346,14 @@ mod tests {
         assert_identifier_correct_lexing_eq!("_x");
         assert_identifier_correct_lexing_eq!("____________________Qua_");
 
+        assert_identifier_correct_lexing_eq!("qua0");
+        assert_identifier_correct_lexing_eq!("qua3");
+        assert_identifier_correct_lexing_eq!("qua999999999999");
+
+        assert_identifier_correct_lexing_ne!("0qua");
+        assert_identifier_correct_lexing_ne!("3qua");
+        assert_identifier_correct_lexing_ne!("999999999999qua");
+
         assert_identifier_correct_lexing_ne!("____________________Qua!_");
         assert_identifier_correct_lexing_ne!("!Qua__");
         assert_identifier_correct_lexing_ne!("*qua");
