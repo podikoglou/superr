@@ -97,6 +97,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::approx_constant)]
     fn test_literal_pretty_print() {
         assert_eq!(lit!(string "hello").to_string(), "hello");
         assert_eq!(lit!(char 'c').to_string(), "c");
