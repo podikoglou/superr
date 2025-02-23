@@ -10,15 +10,21 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Build
-      run: cargo build -p qua_lexer -p qua_parser -p qua_ast
+    - uses: Swatinem/rust-cache@v2
+
+    - name: Run Clippy
+      run: cargo clippy --all-targets -p qua_lexer -p qua_parser -p qua_ast
+
   test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - uses: Swatinem/rust-cache@v2
+    - uses: taiki-e/install-action@nextest
+
     - name: Run tests
-      run: cargo test -p qua_lexer -p qua_parser -p qua_ast
+      run: cargo nextest run -p qua_lexer -p qua_parser -p qua_ast
