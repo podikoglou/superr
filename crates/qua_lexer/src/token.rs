@@ -3,7 +3,7 @@ use crate::keyword::Keyword;
 // TODO:
 //  +=, *=, /=
 //  true, false (?)
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Token {
     Identifier(String), // factorial, x
     Keyword(Keyword),   // for, in, int, return
