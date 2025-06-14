@@ -1,12 +1,9 @@
-use std::fmt;
 use qua_lexer::token::Token;
+use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ParseError {
-    UnexpectedToken {
-        expected: String,
-        found: Token,
-    },
+    UnexpectedToken { expected: String, found: Token },
     UnexpectedEof,
     InvalidExpression(String),
     InvalidStatement(String),

@@ -448,11 +448,6 @@ impl<'a> Parser<'a> {
                 let expr = self.parse_unary()?;
                 Ok(Expr::Unary(UnaryExpr::Minus(Box::new(expr))))
             }
-            Token::Plus => {
-                self.next_token();
-                let expr = self.parse_unary()?;
-                Ok(Expr::Unary(UnaryExpr::Plus(Box::new(expr))))
-            }
             _ => self.parse_call(),
         }
     }

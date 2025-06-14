@@ -6,10 +6,7 @@ pub enum Expr {
     Unary(UnaryExpr),
     Literal(Literal),
     Identifier(String),
-    Call {
-        name: String,
-        args: Vec<Expr>,
-    },
+    Call { name: String, args: Vec<Expr> },
     Grouping(Box<Expr>),
 }
 
@@ -43,5 +40,4 @@ pub enum BinaryExpr {
 pub enum UnaryExpr {
     Not(ExprBox),
     Minus(ExprBox),
-    Plus(ExprBox),
 }
