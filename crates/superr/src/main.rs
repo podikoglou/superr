@@ -100,6 +100,13 @@ fn main() -> anyhow::Result<()> {
                                 .default_value("-")
                                 .value_parser(value_parser!(FileOrStdin<String>)),
                         ),
+                )
+                .subcommand(
+                    command!("pprint").about("Pretty prints a .qua file").arg(
+                        arg!([input] "Qua program to pretty print")
+                            .default_value("-")
+                            .value_parser(value_parser!(FileOrStdin<String>)),
+                    ),
                 ),
         )
         .subcommand(command!("inspect").about("Launches interactive GUI for Superr"))
@@ -115,6 +122,7 @@ fn main() -> anyhow::Result<()> {
         Some(("qua", matches)) => match matches.subcommand() {
             Some(("lex", matches)) => cli::qua::lex::execute(matches),
             Some(("ast", matches)) => cli::qua::ast::execute(matches),
+            Some(("pprint", matches)) => cli::qua::pprint::execute(matches),
 
             _ => unreachable!("this won't happen"),
         },
