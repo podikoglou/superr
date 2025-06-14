@@ -44,25 +44,25 @@ impl VM {
                 }
 
                 Instruction::Inc(addr) => {
-                    self.state[addr] += 1;
+                    self.state[addr] = self.state[addr].wrapping_add(1);
 
                     self.pc += 1;
                 }
 
                 Instruction::Decr(addr) => {
-                    self.state[addr] -= 1;
+                    self.state[addr] = self.state[addr].wrapping_sub(1);
 
                     self.pc += 1;
                 }
 
                 Instruction::Add(a, b) => {
-                    self.state[a] = self.state[a] + self.state[b];
+                    self.state[a] = self.state[a].wrapping_add(self.state[b]);
 
                     self.pc += 1;
                 }
 
                 Instruction::Sub(a, b) => {
-                    self.state[a] = self.state[a] - self.state[b];
+                    self.state[a] = self.state[a].wrapping_sub(self.state[b]);
 
                     self.pc += 1;
                 }
