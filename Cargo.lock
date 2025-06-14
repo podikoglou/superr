@@ -3037,6 +3037,7 @@ dependencies = [
  "fastrand",
  "indicatif",
  "num-format",
+ "qua_compiler",
  "qua_lexer",
  "qua_parser",
  "rayon",

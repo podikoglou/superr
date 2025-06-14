@@ -107,6 +107,13 @@ fn main() -> anyhow::Result<()> {
                             .default_value("-")
                             .value_parser(value_parser!(FileOrStdin<String>)),
                     ),
+                )
+                .subcommand(
+                    command!("cc").about("Compiles a .qua file").arg(
+                        arg!([input] "Qua program to compile")
+                            .default_value("-")
+                            .value_parser(value_parser!(FileOrStdin<String>)),
+                    ),
                 ),
         )
         .subcommand(command!("inspect").about("Launches interactive GUI for Superr"))
@@ -123,6 +130,7 @@ fn main() -> anyhow::Result<()> {
             Some(("lex", matches)) => cli::qua::lex::execute(matches),
             Some(("ast", matches)) => cli::qua::ast::execute(matches),
             Some(("pprint", matches)) => cli::qua::pprint::execute(matches),
+            Some(("cc", matches)) => cli::qua::cc::execute(matches),
 
             _ => unreachable!("this won't happen"),
         },

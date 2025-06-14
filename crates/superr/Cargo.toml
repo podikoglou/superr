@@ -10,6 +10,7 @@ superr_vm = { path = "../superr_vm/" }
 superr_optimizers = { path = "../superr_optimizers/" }
 qua_lexer = { path = "../qua_lexer/" }
 qua_parser = { path = "../qua_parser/" }
+qua_compiler = { path = "../qua_compiler/" }
 superr_inspect = { path = "../superr_inspect/" }
 num-format = "0.4.4"
 indicatif = "0.17.8"
