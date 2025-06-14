@@ -5,6 +5,12 @@ pub enum Expr {
     Binary(BinaryExpr),
     Unary(UnaryExpr),
     Literal(Literal),
+    Identifier(String),
+    Call {
+        name: String,
+        args: Vec<Expr>,
+    },
+    Grouping(Box<Expr>),
 }
 
 pub type ExprBox = Box<Expr>;
@@ -30,10 +36,12 @@ pub enum BinaryExpr {
     Subtract(ExprBox, ExprBox),
     Multiply(ExprBox, ExprBox),
     Divide(ExprBox, ExprBox),
+    Modulo(ExprBox, ExprBox),
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum UnaryExpr {
     Not(ExprBox),
     Minus(ExprBox),
+    Plus(ExprBox),
 }
