@@ -3038,6 +3038,7 @@ dependencies = [
  "indicatif",
  "num-format",
  "qua_lexer",
+ "qua_parser",
  "rayon",
  "superr_inspect",
  "superr_optimizers",
