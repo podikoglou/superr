@@ -2656,6 +2656,8 @@ version = "0.1.0"
 dependencies = [
  "qua_ast",
  "qua_lexer",
+ "serde",
+ "test-fuzz",
 ]
 
 [[package]]

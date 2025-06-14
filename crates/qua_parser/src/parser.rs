@@ -658,10 +658,7 @@ int factorial(int x) {
     return y;
 }
 "#;
-        let lexer = Lexer::new(source);
-        let mut parser = Parser::new(lexer);
-
-        let program = parser.parse_program().unwrap();
+        let program = parse(source);
 
         assert_eq!(program.functions.len(), 1);
 
@@ -674,4 +671,11 @@ int factorial(int x) {
         // The body should be a block
         assert!(matches!(function.body, Stmt::Block(_)));
     }
+}
+
+#[test_fuzz::test_fuzz]
+fn parse(input: &str) -> Program {
+    let mut parser = Parser::new(Lexer::new(input));
+
+    parser.parse_program().unwrap()
 }

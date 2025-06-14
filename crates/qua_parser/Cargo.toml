@@ -6,3 +6,7 @@ edition = "2021"
 [dependencies]
 qua_ast = { path = "../qua_ast/" }
 qua_lexer = { path = "../qua_lexer/" }
+test-fuzz = "*"
+
+[dev-dependencies]
+serde = "*"
