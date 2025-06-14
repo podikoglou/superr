@@ -8,4 +8,4 @@ members = [
     "crates/qua_lexer",
     "crates/qua_ast",
     "crates/qua_parser"
-]
+, "crates/qua_compiler"]

@@ -1,0 +1,9 @@
+[package]
+name = "qua_compiler"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+qua_ast = { path = "../qua_ast/" }
+qua_parser = { path = "../qua_parser/" }
+superr_vm = { path = "../superr_vm/" }

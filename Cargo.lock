@@ -2633,6 +2633,15 @@ name = "qua_ast"
 version = "0.1.0"
 
 [[package]]
+name = "qua_compiler"
+version = "0.1.0"
+dependencies = [
+ "qua_ast",
+ "qua_parser",
+ "superr_vm",
+]
+
+[[package]]
 name = "qua_lexer"
 version = "0.1.0"
 dependencies = [
