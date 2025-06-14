@@ -1,0 +1,3 @@
+INC 0
+PUT 0
+JMP 0
