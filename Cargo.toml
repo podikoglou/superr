@@ -7,5 +7,7 @@ members = [
     "crates/superr_inspect",
     "crates/qua_lexer",
     "crates/qua_ast",
-    "crates/qua_parser"
-, "crates/qua_compiler"]
+    "crates/qua_parser",
+    "crates/qua_compiler",
+    "crates/superr_assembler",
+]
