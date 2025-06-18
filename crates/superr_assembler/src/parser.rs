@@ -1,4 +1,4 @@
-use chumsky::{prelude::*, text::whitespace};
+use chumsky::{prelude::*, text};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum ASTNode {
@@ -14,12 +14,12 @@ pub fn parser<'a>() -> impl Parser<'a, &'a str, Vec<ASTNode>> {
     // TOOD: strings/characters in the future?
     let operand = number;
 
-    let operands = operand.padded().separated_by(just(",")).collect();
+    let operands = operand.separated_by(just(',').padded()).collect();
 
-    let opcode_parser = text::ident();
+    let opcode = text::ident();
 
-    let instruction = opcode_parser
-        .then_ignore(whitespace().repeated().at_least(1))
+    let instruction = opcode
+        .then_ignore(just(' ').repeated().at_least(1))
         .then(operands)
         .map(
             |(opcode, operands): (&str, Vec<u64>)| ASTNode::Instruction {
