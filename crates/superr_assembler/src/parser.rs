@@ -19,12 +19,17 @@ pub fn parser<'a>() -> impl Parser<'a, &'a str, Vec<ASTNode>> {
     let opcode = text::ident();
 
     let instruction = opcode
-        .then_ignore(just(' ').repeated().at_least(1))
-        .then(operands)
+        .then(
+            just(' ')
+                .repeated()
+                .at_least(1)
+                .ignore_then(operands)
+                .or_not(),
+        )
         .map(
-            |(opcode, operands): (&str, Vec<u64>)| ASTNode::Instruction {
+            |(opcode, operands): (&str, Option<Vec<u64>>)| ASTNode::Instruction {
                 opcode: opcode.to_string(),
-                operands,
+                operands: operands.unwrap_or_default(),
             },
         );
 
