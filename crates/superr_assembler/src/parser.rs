@@ -34,8 +34,9 @@ pub fn parser<'a>() -> impl Parser<'a, &'a str, Vec<ASTNode>> {
         );
 
     instruction
-        .separated_by(text::newline())
+        .separated_by(text::newline().repeated().at_least(1))
         .allow_trailing()
+        .allow_leading()
         .collect::<Vec<_>>()
 }
 
