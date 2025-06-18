@@ -24,14 +24,13 @@ pub fn parser<'a>() -> impl Parser<'a, &'a str, Vec<ASTNode>> {
         .map(
             |(opcode, operands): (&str, Vec<u64>)| ASTNode::Instruction {
                 opcode: opcode.to_string(),
-                operands: operands,
+                operands,
             },
         );
 
     instruction
         .separated_by(text::newline())
         .allow_trailing()
-        // .repeated()
         .collect::<Vec<_>>()
 }
 
