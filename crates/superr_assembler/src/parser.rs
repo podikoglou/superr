@@ -70,7 +70,8 @@ mod tests {
             operands: vec![],
         }];
 
-        assert_eq!(parser().parse("HALT ").into_result(), Ok(expected));
+        assert_eq!(parser().parse("HALT ").into_result(), Ok(expected.clone()));
+        assert_eq!(parser().parse("HALT").into_result(), Ok(expected.clone()));
     }
 
     #[test]
@@ -162,8 +163,10 @@ mod tests {
             },
         ];
 
-        let input = "LOAD 10\nADD 5, 15\nHALT ";
-        assert_eq!(parser().parse(input).into_result(), Ok(expected));
+        assert_eq!(
+            parser().parse("LOAD 10\nADD 5, 15\nHALT").into_result(),
+            Ok(expected)
+        );
     }
 
     #[test]
