@@ -1,10 +1,6 @@
 use chumsky::{prelude::*, text};
 
-#[derive(Debug, PartialEq, Clone)]
-pub enum ASTNode {
-    Instruction { opcode: String, operands: Vec<u64> },
-    Block(Vec<ASTNode>),
-}
+use crate::ast::ASTNode;
 
 pub fn parser<'a>() -> impl Parser<'a, &'a str, Vec<ASTNode>> {
     let number = text::int(10)

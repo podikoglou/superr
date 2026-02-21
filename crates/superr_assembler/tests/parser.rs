@@ -1,5 +1,5 @@
 use chumsky::Parser;
-use superr_assembler::parser::{parser, ASTNode};
+use superr_assembler::{ast::ASTNode, parser::parser};
 
 #[test]
 fn test_single_instruction() {
