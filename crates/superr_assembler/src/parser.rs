@@ -1,33 +1,34 @@
+use crate::ast::{ASTNode, Operand};
 use chumsky::{prelude::*, text};
 
-use crate::ast::ASTNode;
+pub fn parse_operand_address<'a>() -> impl Parser<'a, &'a str, usize> {
+    text::int(10).map(|s: &str| s.parse::<usize>().unwrap())
+}
+
+pub fn parse_operand_immediate<'a>() -> impl Parser<'a, &'a str, u64> {
+    text::int(10).map(|s: &str| s.parse::<u64>().unwrap())
+}
+
+pub fn parse_operand<'a>() -> impl Parser<'a, &'a str, Operand> {
+    choice((
+        parse_operand_address().map(Operand::Address),
+        parse_operand_immediate().map(Operand::ImmediateValue),
+    ))
+}
 
 pub fn parser<'a>() -> impl Parser<'a, &'a str, Vec<ASTNode>> {
-    let number = text::int(10)
-        .map(|x| u64::from_str_radix(x, 10))
-        .unwrapped();
+    let operand = parse_operand();
 
-    // TOOD: strings/characters in the future?
-    let operand = number;
-
-    let operands = operand.separated_by(just(',').padded()).collect();
+    let operands = operand.padded().separated_by(just(',')).collect();
 
     let opcode = text::ident();
 
-    let instruction = opcode
-        .then(
-            just(' ')
-                .repeated()
-                .at_least(1)
-                .ignore_then(operands)
-                .or_not(),
-        )
-        .map(
-            |(opcode, operands): (&str, Option<Vec<u64>>)| ASTNode::Instruction {
-                opcode: opcode.to_string(),
-                operands: operands.unwrap_or_default(),
-            },
-        );
+    let instruction = opcode.then(just(' ').repeated().ignore_then(operands)).map(
+        |(opcode, operands): (&str, Vec<Operand>)| ASTNode::Instruction {
+            opcode: opcode.to_string(),
+            operands,
+        },
+    );
 
     instruction
         .separated_by(text::newline().repeated().at_least(1))
