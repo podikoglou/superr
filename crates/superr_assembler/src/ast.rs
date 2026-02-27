@@ -8,6 +8,23 @@ pub enum Operand {
 }
 
 #[derive(Debug, PartialEq, Clone)]
+pub enum Instruction {
+    Load(ImmediateValue),
+
+    Swap(Address, Address),
+
+    XOR(Address, Address),
+
+    Inc(Address),
+    Decr(Address),
+
+    Add(Address, Address),
+    Sub(Address, Address),
+
+    Put(Address),
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum ASTNode {
     Instruction {
         opcode: String,
