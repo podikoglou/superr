@@ -1,5 +1,5 @@
-pub type Address = usize;
-pub type ImmediateValue = u64;
+pub type Address = u8;
+pub type ImmediateValue = u8;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Operand {

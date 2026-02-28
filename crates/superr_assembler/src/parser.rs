@@ -3,12 +3,12 @@ use chumsky::{prelude::*, text};
 
 pub type ParserError<'src> = extra::Err<Rich<'src, char>>;
 
-pub fn parse_operand_address<'a>() -> impl Parser<'a, &'a str, usize, ParserError<'a>> {
-    text::int(10).map(|s: &str| s.parse::<usize>().unwrap())
+pub fn parse_operand_address<'a>() -> impl Parser<'a, &'a str, u8, ParserError<'a>> {
+    text::int(10).map(|s: &str| s.parse::<u8>().unwrap())
 }
 
-pub fn parse_operand_immediate<'a>() -> impl Parser<'a, &'a str, u64, ParserError<'a>> {
-    text::int(10).map(|s: &str| s.parse::<u64>().unwrap())
+pub fn parse_operand_immediate<'a>() -> impl Parser<'a, &'a str, u8, ParserError<'a>> {
+    text::int(10).map(|s: &str| s.parse::<u8>().unwrap())
 }
 //
 // pub fn parse_operand<'a>() -> impl Parser<'a, &'a str, Operand, ParserError<'a>> {
