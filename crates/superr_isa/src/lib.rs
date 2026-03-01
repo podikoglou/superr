@@ -15,18 +15,28 @@ pub enum Operand {
 // https://github.com/AZHenley/superoptimizer
 #[derive(Debug, PartialEq, Clone)]
 pub enum Instruction {
+    /// Loads a value into the memory address 0
     Load(ImmediateValue),
 
+    /// Swaps the values at two memory addresses
     Swap(Address, Address),
 
+    /// XORs the values at two memory addresses and places the result on the first
     XOR(Address, Address),
 
+    /// Increments the value at a given memory address
     Inc(Address),
+
+    /// Decrements the value at a given memory address
     Decr(Address),
 
+    /// Adds the values at two memory addresses and places the result on the first
     Add(Address, Address),
+
+    /// Subtracts the values at two memory addresses and places the result on the first
     Sub(Address, Address),
 
+    /// Prints the value at a given memory address
     Put(Address),
 }
 
