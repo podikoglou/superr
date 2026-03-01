@@ -50,5 +50,5 @@ impl Display for Instruction {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub struct Program(pub Vec<Instruction>);
