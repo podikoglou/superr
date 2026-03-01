@@ -22,7 +22,7 @@ fn immediate_value_operand_parser<'a>() -> impl Parser<'a, &'a str, u8, ParserEr
 //     parse_operand().padded().separated_by(just(',')).collect()
 // }
 
-fn instruction_parser<'a>() -> impl Parser<'a, &'a str, Instruction, ParserError<'a>> {
+pub fn instruction_parser<'a>() -> impl Parser<'a, &'a str, Instruction, ParserError<'a>> {
     // TODO: macro for operands
 
     choice((
@@ -69,7 +69,7 @@ fn instruction_parser<'a>() -> impl Parser<'a, &'a str, Instruction, ParserError
     ))
 }
 
-fn program_parser<'a>() -> impl Parser<'a, &'a str, Program, ParserError<'a>> {
+pub fn program_parser<'a>() -> impl Parser<'a, &'a str, Program, ParserError<'a>> {
     instruction_parser()
         .separated_by(text::newline().repeated().at_least(1))
         .allow_trailing()
