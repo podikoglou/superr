@@ -1,4 +1,4 @@
-use superr_isa::{Instruction, Program};
+use super::isa::{Instruction, Program};
 
 pub const MEM_SIZE: usize = 12;
 
