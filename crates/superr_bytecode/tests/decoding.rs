@@ -1,5 +1,7 @@
-use superr_bytecode::u32_to_instruction;
-use superr_isa::Instruction;
+use std::io::Cursor;
+
+use superr_bytecode::{read_program, u32_to_instruction};
+use superr_isa::{Instruction, Program};
 
 #[test]
 fn test_decode_load() {
@@ -89,27 +91,30 @@ fn test_decode_put() {
     assert_eq!(u32_to_instruction(0x800000FF), Ok(Instruction::Put(255)));
 }
 
-// #[test]
-// fn test_decode_program() {
-//     assert_eq!(program_to_bytes(&Program(vec![])), vec![0x00, 0x00,]);
-//
-//     assert_eq!(
-//         program_to_bytes(&Program(vec![Instruction::Load(255)])),
-//         vec![
-//             0x00, 0x01, // program length (1)
-//             0x10, 0x00, 0x00, 0xFF // LOAD 255
-//         ]
-//     );
-//
-//     assert_eq!(
-//         program_to_bytes(&Program(vec![
-//             Instruction::Load(13),
-//             Instruction::Swap(0, 4)
-//         ])),
-//         vec![
-//             0x00, 0x02, // program length (2)
-//             0x10, 0x00, 0x00, 0x0D, // LOAD 13
-//             0x20, 0x00, 0x00, 0x04, // SWAP 0, 4
-//         ]
-//     );
-// }
+#[test]
+fn test_decode_program() {
+    assert_eq!(
+        read_program(Cursor::new(vec![0x00, 0x00])),
+        Ok(Program(vec![]))
+    );
+
+    assert_eq!(
+        read_program(Cursor::new(vec![
+            0x00, 0x01, // program length (1)
+            0x10, 0x00, 0x00, 0xFF // LOAD 255
+        ])),
+        Ok(Program(vec![Instruction::Load(255)]))
+    );
+
+    assert_eq!(
+        read_program(Cursor::new(vec![
+            0x00, 0x02, // program length (2)
+            0x10, 0x00, 0x00, 0x0D, // LOAD 13
+            0x20, 0x00, 0x00, 0x04, // SWAP 0, 4
+        ])),
+        Ok(Program(vec![
+            Instruction::Load(13),
+            Instruction::Swap(0, 4)
+        ]))
+    );
+}
