@@ -1,8 +1,22 @@
 use chumsky::Parser;
 use superr_assembler::{
-    ast::{ASTNode, Operand},
-    parser::parser,
+    ast::{ASTNode, Instruction, Operand},
+    parser::{parse_instruction, parser},
 };
+
+#[test]
+fn test_parse_instruction() {
+    let parse = |s| parse_instruction().parse(s).into_result();
+
+    assert_eq!(parse("LOAD 42"), Ok(Instruction::Load(42)));
+    assert_eq!(parse("SWAP 4, 2"), Ok(Instruction::Swap(4, 2)));
+    assert_eq!(parse("XOR 0, 255"), Ok(Instruction::XOR(0, 255)));
+    assert_eq!(parse("INC 27"), Ok(Instruction::Inc(27)));
+    assert_eq!(parse("DECR 27"), Ok(Instruction::Decr(27)));
+    assert_eq!(parse("ADD 255, 255"), Ok(Instruction::Add(255, 255)));
+    assert_eq!(parse("SUB 0, 0"), Ok(Instruction::Sub(0, 0)));
+    assert_eq!(parse("PUT 0"), Ok(Instruction::Put(0)));
+}
 
 #[test]
 fn test_single_instruction() {
