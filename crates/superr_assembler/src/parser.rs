@@ -1,13 +1,13 @@
 use chumsky::{prelude::*, text};
 use superr_isa::{Instruction, Program};
 
-pub type ParserError<'src> = extra::Err<Rich<'src, char>>;
+type ParserError<'src> = extra::Err<Rich<'src, char>>;
 
-pub fn parse_operand_address<'a>() -> impl Parser<'a, &'a str, u8, ParserError<'a>> {
+fn address_operand_parser<'a>() -> impl Parser<'a, &'a str, u8, ParserError<'a>> {
     text::int(10).map(|s: &str| s.parse::<u8>().unwrap())
 }
 
-pub fn parse_operand_immediate<'a>() -> impl Parser<'a, &'a str, u8, ParserError<'a>> {
+fn immediate_value_operand_parser<'a>() -> impl Parser<'a, &'a str, u8, ParserError<'a>> {
     text::int(10).map(|s: &str| s.parse::<u8>().unwrap())
 }
 //
@@ -22,55 +22,55 @@ pub fn parse_operand_immediate<'a>() -> impl Parser<'a, &'a str, u8, ParserError
 //     parse_operand().padded().separated_by(just(',')).collect()
 // }
 
-pub fn parse_instruction<'a>() -> impl Parser<'a, &'a str, Instruction, ParserError<'a>> {
+fn instruction_parser<'a>() -> impl Parser<'a, &'a str, Instruction, ParserError<'a>> {
     // TODO: macro for operands
 
     choice((
         text::keyword("LOAD")
             .ignore_then(text::whitespace())
-            .ignore_then(parse_operand_immediate())
+            .ignore_then(immediate_value_operand_parser())
             .map(Instruction::Load),
         text::keyword("SWAP")
             .ignore_then(text::whitespace())
-            .ignore_then(parse_operand_address())
+            .ignore_then(address_operand_parser())
             .then_ignore(just(",").padded())
-            .then(parse_operand_address())
+            .then(address_operand_parser())
             .map(|(a, b)| Instruction::Swap(a, b)),
         text::keyword("XOR")
             .ignore_then(text::whitespace())
-            .ignore_then(parse_operand_address())
+            .ignore_then(address_operand_parser())
             .then_ignore(just(",").padded())
-            .then(parse_operand_address())
+            .then(address_operand_parser())
             .map(|(a, b)| Instruction::XOR(a, b)),
         text::keyword("INC")
             .ignore_then(text::whitespace())
-            .ignore_then(parse_operand_address())
+            .ignore_then(address_operand_parser())
             .map(Instruction::Inc),
         text::keyword("DECR") // like this for backwards compatibility. TODO: DEC
             .ignore_then(text::whitespace())
-            .ignore_then(parse_operand_address())
+            .ignore_then(address_operand_parser())
             .map(Instruction::Decr),
         text::keyword("ADD")
             .ignore_then(text::whitespace())
-            .ignore_then(parse_operand_address())
+            .ignore_then(address_operand_parser())
             .then_ignore(just(",").padded())
-            .then(parse_operand_address())
+            .then(address_operand_parser())
             .map(|(a, b)| Instruction::Add(a, b)),
         text::keyword("SUB")
             .ignore_then(text::whitespace())
-            .ignore_then(parse_operand_address())
+            .ignore_then(address_operand_parser())
             .then_ignore(just(",").padded())
-            .then(parse_operand_address())
+            .then(address_operand_parser())
             .map(|(a, b)| Instruction::Sub(a, b)),
         text::keyword("PUT")
             .ignore_then(text::whitespace())
-            .ignore_then(parse_operand_address())
+            .ignore_then(address_operand_parser())
             .map(Instruction::Put),
     ))
 }
 
-pub fn parser<'a>() -> impl Parser<'a, &'a str, Program, ParserError<'a>> {
-    parse_instruction()
+fn program_parser<'a>() -> impl Parser<'a, &'a str, Program, ParserError<'a>> {
+    instruction_parser()
         .separated_by(text::newline().repeated().at_least(1))
         .allow_trailing()
         .allow_leading()
@@ -93,4 +93,8 @@ pub fn parser<'a>() -> impl Parser<'a, &'a str, Program, ParserError<'a>> {
     //     .allow_trailing()
     //     .allow_leading()
     //     .collect::<Vec<_>>()
+}
+
+pub fn parse_program(input: &str) -> Result<Program, Vec<chumsky::error::Rich<'_, char>>> {
+    program_parser().parse(input).into_result()
 }

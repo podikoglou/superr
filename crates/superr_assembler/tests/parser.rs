@@ -1,10 +1,10 @@
 use chumsky::Parser;
-use superr_assembler::parser::{parse_instruction, parser};
+use superr_assembler::parser::{instruction_parser, program_parser};
 use superr_isa::{Instruction, Program};
 
 #[test]
 fn test_parse_instruction() {
-    let parse = |s| parse_instruction().parse(s).into_result();
+    let parse = |s| instruction_parser().parse(s).into_result();
 
     assert_eq!(parse("LOAD 42"), Ok(Instruction::Load(42)));
     assert_eq!(parse("SWAP 4, 2"), Ok(Instruction::Swap(4, 2)));
@@ -18,7 +18,7 @@ fn test_parse_instruction() {
 
 #[test]
 fn test_single_instruction() {
-    let parse = |s| parser().parse(s).into_result();
+    let parse = |s| program_parser().parse(s).into_result();
 
     assert_eq!(parse("LOAD 42"), Ok(Program(vec![Instruction::Load(42)])));
     assert!(parse("LOAD 42, 0").is_err());
@@ -27,7 +27,7 @@ fn test_single_instruction() {
 
 #[test]
 fn test_multiple_operands() {
-    let parse = |s| parser().parse(s).into_result();
+    let parse = |s| program_parser().parse(s).into_result();
 
     assert_eq!(parse("ADD 1,2"), Ok(Program(vec![Instruction::Add(1, 2)])));
     assert_eq!(parse("ADD 1, 2"), Ok(Program(vec![Instruction::Add(1, 2)])));
@@ -41,7 +41,7 @@ fn test_multiple_operands() {
 
 #[test]
 fn test_newlines() {
-    let parse = |s| parser().parse(s).into_result();
+    let parse = |s| program_parser().parse(s).into_result();
 
     let prog = Program(vec![Instruction::Load(5), Instruction::Load(2)]);
 
