@@ -1,4 +1,4 @@
-use superr_assembler::ast::Instruction;
+use superr_assembler::ast::{Instruction, Program};
 
 #[test]
 fn test_assemble_load() {
@@ -56,6 +56,7 @@ fn test_assemble_add() {
     assert_eq!(Into::<u32>::into(&Instruction::Add(255, 0)), 0x6000FF00);
     assert_eq!(Into::<u32>::into(&Instruction::Add(255, 1)), 0x6000FF01);
 }
+
 #[test]
 fn test_assemble_sub() {
     assert_eq!(Into::<u32>::into(&Instruction::Sub(0, 0)), 0x70000000);
@@ -73,4 +74,29 @@ fn test_assemble_put() {
     assert_eq!(Into::<u32>::into(&Instruction::Put(0)), 0x80000000);
     assert_eq!(Into::<u32>::into(&Instruction::Put(4)), 0x80000004);
     assert_eq!(Into::<u32>::into(&Instruction::Put(255)), 0x800000FF);
+}
+
+#[test]
+fn test_assemble_program() {
+    assert_eq!(Into::<Vec<u8>>::into(&Program(vec![])), vec![0x00, 0x00,]);
+
+    assert_eq!(
+        Into::<Vec<u8>>::into(&Program(vec![Instruction::Load(255)])),
+        vec![
+            0x00, 0x01, // program length (1)
+            0x10, 0x00, 0x00, 0xFF // LOAD 255
+        ]
+    );
+
+    assert_eq!(
+        Into::<Vec<u8>>::into(&Program(vec![
+            Instruction::Load(13),
+            Instruction::Swap(0, 4)
+        ])),
+        vec![
+            0x00, 0x02, // program length (2)
+            0x10, 0x00, 0x00, 0x0D, // LOAD 13
+            0x20, 0x00, 0x00, 0x04, // SWAP 0, 4
+        ]
+    );
 }

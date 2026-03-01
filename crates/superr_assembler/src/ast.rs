@@ -32,3 +32,6 @@ pub enum ASTNode {
     },
     Block(Vec<ASTNode>),
 }
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Program(pub Vec<Instruction>);

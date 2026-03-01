@@ -1,4 +1,4 @@
-use crate::ast::Instruction;
+use crate::ast::{Instruction, Program};
 
 impl From<&Instruction> for u32 {
     fn from(val: &Instruction) -> Self {
@@ -17,6 +17,23 @@ impl From<&Instruction> for u32 {
 
 impl From<&Instruction> for Vec<u8> {
     fn from(val: &Instruction) -> Self {
-        Into::<u32>::into(val).to_le_bytes().into()
+        Into::<u32>::into(val).to_be_bytes().into()
+    }
+}
+
+impl From<&Program> for Vec<u8> {
+    fn from(val: &Program) -> Self {
+        // encode length as an unsigned 16 bit big endian number
+        let len = val.0.len() as u16;
+        let len_bytes = len.to_be_bytes().to_vec();
+
+        // encode every instruction into a flat array (see From<&Instruction> for Vec<u8>)
+        let instructions_bytes = val
+            .0
+            .iter()
+            .flat_map(Into::<Vec<u8>>::into)
+            .collect::<Vec<u8>>();
+
+        [len_bytes, instructions_bytes].concat()
     }
 }
