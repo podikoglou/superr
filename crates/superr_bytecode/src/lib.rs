@@ -1,8 +1,14 @@
+use std::io::Read;
+
+use byteorder::{BigEndian, ReadBytesExt};
 use superr_isa::{Instruction, Program};
 use thiserror::Error;
 
-#[derive(Error, Debug, PartialEq)]
+#[derive(Error, Debug)]
 pub enum BytecodeDecodingError {
+    #[error("io error")]
+    IOError(#[from] std::io::Error),
+
     #[error("invalid opcode: {0}")]
     InvalidOpcode(u8),
 
@@ -60,4 +66,26 @@ pub fn program_to_bytes(program: &Program) -> Vec<u8> {
         .collect::<Vec<u8>>();
 
     [len_bytes, instructions_bytes].concat()
+}
+
+pub fn read_program(mut reader: impl Read) -> Result<Program, BytecodeDecodingError> {
+    // read length
+    let len = reader
+        .read_u16::<BigEndian>()
+        .map_err(BytecodeDecodingError::IOError)?;
+
+    // read instructions
+    let mut instructions = vec![];
+
+    for _ in 0..len {
+        let read = reader
+            .read_u32::<BigEndian>()
+            .map_err(BytecodeDecodingError::IOError)?;
+
+        let instruction = u32_to_instruction(read)?;
+
+        instructions.push(instruction);
+    }
+
+    Ok(Program(instructions))
 }

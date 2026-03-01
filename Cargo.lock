@@ -3145,6 +3145,7 @@ dependencies = [
 name = "superr_bytecode"
 version = "0.1.0"
 dependencies = [
+ "byteorder",
  "superr_isa",
  "thiserror 2.0.18",
 ]
