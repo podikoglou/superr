@@ -1,6 +1,6 @@
 use anyhow::Context;
 use clap::ArgMatches;
-use superr_vm::{instruction::Instruction, vm};
+use superr_vm::{isa::Instruction, vm};
 
 use crate::INSTRUCTIONS;
 
@@ -23,8 +23,8 @@ pub fn execute(matches: &ArgMatches) -> anyhow::Result<()> {
         .collect();
 
     for _ in 0..fastrand::usize(*min_instructions..=*max_instructions) {
-        let addr1 = fastrand::usize(0..vm::MEM_SIZE);
-        let addr2 = fastrand::usize(0..vm::MEM_SIZE);
+        let addr1 = fastrand::u8(0..vm::MEM_SIZE as u8);
+        let addr2 = fastrand::u8(0..vm::MEM_SIZE as u8);
 
         let imm = fastrand::u8(min_imm..=max_imm);
 

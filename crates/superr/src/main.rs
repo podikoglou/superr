@@ -1,4 +1,5 @@
 pub mod cli;
+mod reporting;
 
 use clap::{arg, command, value_parser, ArgAction};
 use clap_stdin::FileOrStdin;

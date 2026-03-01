@@ -14,15 +14,17 @@ use clap_stdin::FileOrStdin;
 use indicatif::{ProgressBar, ProgressStyle};
 use num_format::{Locale, ToFormattedString};
 use rayon::ThreadPoolBuilder;
+use superr_assembler::parser;
 use superr_optimizers::optimizers::{
     diffing::DiffingOptimizer, exhaustive::ExhaustiveOptimizer,
     random_search::RandomSearchOptimizer, Optimizer, OptimizerArgs,
 };
 use superr_vm::{
-    instruction::Instruction,
-    program::Program,
+    isa::Program,
     vm::{State, VM},
 };
+
+use crate::reporting::parse_failure;
 
 pub fn execute(matches: &ArgMatches) -> anyhow::Result<()> {
     let input = matches
@@ -30,19 +32,13 @@ pub fn execute(matches: &ArgMatches) -> anyhow::Result<()> {
         .context("couldn't get input")?
         .clone();
 
+    let file_name = input.filename().to_string();
     let contents = input.contents().context("couldn't read input")?;
 
-    let mut program_in = Program::new();
+    let program_in = parser::parse_program(&contents)
+        .unwrap_or_else(|errs| parse_failure(&errs[0], &contents, file_name));
 
-    for line in contents.lines() {
-        if !line.is_empty() {
-            program_in
-                .instructions
-                .push(Instruction::from(line.to_string()))
-        }
-    }
-
-    let length_in = program_in.instructions.len();
+    let length_in = program_in.0.len();
     let target = VM::compute_state(&program_in);
 
     eprintln!("*** Input Program ***");
@@ -55,7 +51,7 @@ pub fn execute(matches: &ArgMatches) -> anyhow::Result<()> {
 
     // run optimizer
     let program_out = optimize(program_in, matches);
-    let length_out = program_out.instructions.len();
+    let length_out = program_out.0.len();
 
     // print results
     eprintln!();
@@ -85,7 +81,7 @@ fn optimize(program: Program, matches: &ArgMatches) -> Program {
     // run program to get the target memory & get amount of instructinos,
     // we pass these two to the optimizer.
     let target = VM::compute_state(&program);
-    let length = program.instructions.len();
+    let length = program.0.len();
 
     // create thread pool
     let thread_pool = ThreadPoolBuilder::new().build().unwrap();
@@ -197,18 +193,18 @@ fn progress_loop(counter: Arc<AtomicU64>, should_stop: Arc<AtomicBool>) {
 }
 
 fn print_program(program: &Program) {
-    if program.instructions.len() > 20 {
+    if program.0.len() > 20 {
         eprintln!("[Program too long to display]");
         return;
     }
 
-    for instruction in &program.instructions {
+    for instruction in &program.0 {
         eprintln!("{}", instruction.to_string());
     }
 }
 
 fn print_program_stdout(program: &Program) {
-    for instruction in &program.instructions {
+    for instruction in &program.0 {
         println!("{}", instruction.to_string());
     }
 }

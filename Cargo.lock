@@ -252,6 +252,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "ariadne"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8454c8a44ce2cb9cc7e7fae67fc6128465b343b92c6631e94beca3c8d1524ea5"
+dependencies = [
+ "unicode-width 0.2.0",
+ "yansi",
+]
+
+[[package]]
 name = "arrayref"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3103,6 +3113,8 @@ name = "superr"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "ariadne",
+ "chumsky",
  "clap",
  "clap-stdin",
  "ctrlc",
@@ -3113,6 +3125,7 @@ dependencies = [
  "qua_lexer",
  "qua_parser",
  "rayon",
+ "superr_assembler",
  "superr_inspect",
  "superr_optimizers",
  "superr_vm",
@@ -4261,6 +4274,12 @@ name = "xml-rs"
 version = "0.8.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c5b940ebc25896e71dd073bad2dbaa2abfe97b0a391415e22ad1326d9c54e3c4"
+
+[[package]]
+name = "yansi"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cfe53a6657fd280eaa890a3bc59152892ffa3e30101319d168b781ed6529b049"
 
 [[package]]
 name = "yoke"

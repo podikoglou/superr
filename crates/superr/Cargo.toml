@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 superr_vm = { path = "../superr_vm/" }
 superr_optimizers = { path = "../superr_optimizers/" }
+superr_assembler = { path = "../superr_assembler/" }
 qua_lexer = { path = "../qua_lexer/" }
 qua_parser = { path = "../qua_parser/" }
 qua_compiler = { path = "../qua_compiler/" }
@@ -20,3 +21,5 @@ anyhow = "1.0.93"
 fastrand = "2.1.1"
 clap = { version = "4.5.29", features = ["cargo"] }
 clap-stdin = "0.6.0"
+ariadne = "0.6.0"
+chumsky = "0.10.1"

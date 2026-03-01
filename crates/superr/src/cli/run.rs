@@ -1,7 +1,10 @@
 use anyhow::Context;
 use clap::ArgMatches;
 use clap_stdin::FileOrStdin;
-use superr_vm::{instruction::Instruction, program::Program, vm::VM};
+use superr_assembler::parser;
+use superr_vm::vm::VM;
+
+use crate::reporting::parse_failure;
 
 pub fn execute(matches: &ArgMatches) -> anyhow::Result<()> {
     let input = matches
@@ -9,17 +12,11 @@ pub fn execute(matches: &ArgMatches) -> anyhow::Result<()> {
         .context("couldn't get input")?
         .clone();
 
+    let file_name = input.filename().to_string();
     let contents = input.contents().context("couldn't read input")?;
 
-    let mut program = Program::new();
-
-    for line in contents.lines() {
-        if !line.is_empty() {
-            program
-                .instructions
-                .push(Instruction::from(line.to_string()))
-        }
-    }
+    let program = parser::parse_program(&contents)
+        .unwrap_or_else(|errs| parse_failure(&errs[0], &contents, file_name));
 
     // create vm
     let mut vm = VM::default();
