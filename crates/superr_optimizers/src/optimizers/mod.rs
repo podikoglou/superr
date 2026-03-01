@@ -5,7 +5,7 @@ use std::sync::{
 
 use rayon::Scope;
 use superr_vm::{
-    program::Program,
+    isa::Program,
     vm::{MemValue, State},
 };
 

@@ -6,8 +6,7 @@ use rayon::{
 };
 use std::{mem, sync::atomic::Ordering};
 use superr_vm::{
-    instruction::Instruction,
-    program::Program,
+    isa::{Instruction, Program},
     vm::{MemValue, MEM_SIZE, VM},
 };
 
@@ -48,13 +47,13 @@ impl Optimizer for ExhaustiveOptimizer {
                 if self.args.target == state {
                     // we now need to check if this program is shorter than the given program
                     // (there is a chance that it's not, depending on the options)
-                    if program.instructions.len() < self.current_optimal_length() {
+                    if program.0.len() < self.current_optimal_length() {
                         // since the program we found is more efficient, we update the optimal
                         // program to be the one we just found.
 
                         eprintln!(
                             "Found more optimal program ({} instructions)",
-                            program.instructions.len()
+                            program.0.len()
                         );
 
                         {
@@ -74,7 +73,7 @@ impl Optimizer for ExhaustiveOptimizer {
     }
 
     fn current_optimal_length(&self) -> usize {
-        self.args.optimal.read().unwrap().instructions.len()
+        self.args.optimal.read().unwrap().0.len()
     }
 
     fn should_stop(&self) -> bool {
@@ -99,35 +98,35 @@ impl ExhaustiveOptimizer {
                         .iter()
                         .map(|&inst| self.gen_arg_sets(inst))
                         .multi_cartesian_product()
-                        .map(move |args| Program {
-                            instructions: inst_combo
-                                .iter()
-                                .zip(args)
-                                .map(|(&inst, args)| self.create_instruction(inst, args))
-                                .collect(),
+                        .map(move |args| {
+                            Program(
+                                inst_combo
+                                    .iter()
+                                    .zip(args)
+                                    .map(|(&inst, args)| self.create_instruction(inst, args))
+                                    .collect(),
+                            )
                         })
                 })
         })
     }
 
-    fn gen_arg_sets(&self, instruction: &str) -> Vec<[usize; 2]> {
+    fn gen_arg_sets(&self, instruction: &str) -> Vec<[u8; 2]> {
         match instruction {
-            "LOAD" => (0..=self.args.max_num as usize)
-                .map(|val| [val, 0])
-                .collect_vec(),
+            "LOAD" => (0..=self.args.max_num).map(|val| [val, 0]).collect_vec(),
 
-            "SWAP" | "XOR" | "ADD" | "SUB" => (0..MEM_SIZE)
-                .cartesian_product(0..MEM_SIZE)
+            "SWAP" | "XOR" | "ADD" | "SUB" => (0..MEM_SIZE as u8)
+                .cartesian_product(0..MEM_SIZE as u8)
                 .map(|(a, b)| [a, b])
                 .collect(),
 
-            "INC" | "DECR" => (0..MEM_SIZE).map(|val| [val, 0]).collect(),
+            "INC" | "DECR" => (0..MEM_SIZE as u8).map(|val| [val, 0]).collect(),
 
             _ => panic!("Unknown instruction: {}", instruction),
         }
     }
 
-    fn create_instruction(&self, inst: &str, args: [usize; 2]) -> Instruction {
+    fn create_instruction(&self, inst: &str, args: [u8; 2]) -> Instruction {
         match inst {
             "LOAD" => Instruction::Load(args[0] as MemValue),
 

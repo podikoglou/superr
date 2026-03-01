@@ -28,7 +28,7 @@ impl Optimizer for DiffingOptimizer {
     }
 
     fn current_optimal_length(&self) -> usize {
-        self.args.optimal.read().unwrap().instructions.len()
+        self.args.optimal.read().unwrap().0.len()
     }
 
     fn should_stop(&self) -> bool {
@@ -50,20 +50,16 @@ impl Optimizer for DiffingOptimizer {
             // TODO: can this be simplified?
             let mut new_program = self.args.optimal.read().unwrap().clone();
 
-            new_program
-                .instructions
-                .push(generate_instruction(self.args.max_num));
+            new_program.0.push(generate_instruction(self.args.max_num));
             vm.execute_program(new_program.clone());
 
             let new_score = DiffingOptimizer::score(&vm.state, &self.args.target);
 
-            if current_score > new_score
-                && new_program.instructions.len() < self.current_optimal_length()
-            {
+            if current_score > new_score && new_program.0.len() < self.current_optimal_length() {
                 // update optimal program
                 eprintln!(
                     "Found more optimal program ({} instructions)",
-                    new_program.instructions.len()
+                    new_program.0.len()
                 );
 
                 {

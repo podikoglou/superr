@@ -1,5 +1,5 @@
 use superr_vm::{
-    instruction::Instruction,
+    isa::Instruction,
     vm::{self, MemValue},
 };
 
@@ -17,8 +17,8 @@ pub fn generate_instruction(max_num: MemValue) -> Instruction {
         }
 
         1 | 2 | 5 | 6 => {
-            let addr1 = fastrand::usize(0..vm::MEM_SIZE);
-            let addr2 = fastrand::usize(0..vm::MEM_SIZE);
+            let addr1 = fastrand::u8(0..vm::MEM_SIZE as u8);
+            let addr2 = fastrand::u8(0..vm::MEM_SIZE as u8);
 
             match instruction {
                 1 => Instruction::Swap(addr1, addr2),
@@ -31,7 +31,7 @@ pub fn generate_instruction(max_num: MemValue) -> Instruction {
         }
 
         3 | 4 => {
-            let addr = fastrand::usize(0..vm::MEM_SIZE);
+            let addr = fastrand::u8(0..vm::MEM_SIZE as u8);
 
             match instruction {
                 3 => Instruction::Inc(addr),

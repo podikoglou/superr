@@ -4,7 +4,7 @@ use std::{
 };
 
 use rayon::Scope;
-use superr_vm::{program::Program, vm::VM};
+use superr_vm::{isa::Program, vm::VM};
 
 use crate::generate_instruction;
 
@@ -35,7 +35,7 @@ impl Optimizer for RandomSearchOptimizer {
     }
 
     fn current_optimal_length(&self) -> usize {
-        self.args.optimal.read().unwrap().instructions.len()
+        self.args.optimal.read().unwrap().0.len()
     }
 
     fn should_stop(&self) -> bool {
@@ -60,11 +60,11 @@ impl Optimizer for RandomSearchOptimizer {
             if self.args.target == state {
                 // we now need to check if this program is shorter than the given program
                 // (there is a chance that it's not, depending on the options)
-                if program.instructions.len() < self.current_optimal_length() {
+                if program.0.len() < self.current_optimal_length() {
                     // since the program we found is more efficient, we update the optimal
                     // program to be the one we just found.
 
-                    let new_len = program.instructions.len();
+                    let new_len = program.0.len();
 
                     eprintln!("Found more optimal program ({} instructions)", new_len);
 
@@ -89,7 +89,7 @@ impl Optimizer for RandomSearchOptimizer {
 impl RandomSearchOptimizer {
     /// Randomly generates a program based on the [`RandomSearchOptimizerOptions`].
     fn generate_program(&self) -> Program {
-        let mut program = Program::new();
+        let mut program = Program::default();
 
         // generate a random amount of instructions for the program to have. this amount is
         // within 0 and the given max_instructions.
@@ -98,9 +98,7 @@ impl RandomSearchOptimizer {
 
         // generate the instructions of the program
         for _ in 0..instructions_amount {
-            program
-                .instructions
-                .push(generate_instruction(self.args.max_num));
+            program.0.push(generate_instruction(self.args.max_num));
         }
 
         program
