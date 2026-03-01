@@ -3,12 +3,6 @@ use std::fmt::Display;
 pub type Address = u8;
 pub type ImmediateValue = u8;
 
-#[derive(Debug, PartialEq, Clone)]
-pub enum Operand {
-    Address(Address),
-    ImmediateValue(ImmediateValue),
-}
-
 // This instruction set (along with the assembly format) is heavily based on the one in the below
 // project:
 //
