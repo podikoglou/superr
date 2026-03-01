@@ -3134,6 +3134,7 @@ dependencies = [
  "eframe",
  "egui_code_editor",
  "egui_extras",
+ "superr_assembler",
  "superr_optimizers",
  "superr_vm",
 ]

@@ -9,3 +9,4 @@ egui_code_editor = "0.2.11"
 egui_extras = "0.30.0"
 superr_optimizers = { path = "../superr_optimizers" }
 superr_vm = { path = "../superr_vm" }
+superr_assembler = { path = "../superr_assembler" }

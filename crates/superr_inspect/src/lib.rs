@@ -6,14 +6,18 @@ use eframe::egui;
 use egui_code_editor::{CodeEditor, ColorTheme};
 use memory_viewer::MemoryViewer;
 use optimizer_options::OptimizerOptions;
-use superr_vm::{instruction::Instruction, program::Program, vm::VM};
+use superr_assembler::parser;
+use superr_vm::{
+    isa::{Instruction, Program},
+    vm::VM,
+};
 
 static DEFAULT_PROGRAM: &str = "LOAD 3
-SWAP 0 1
+SWAP 0, 1
 LOAD 3
-SWAP 0 2
+SWAP 0, 2
 LOAD 3
-SWAP 0 3
+SWAP 0, 3
 LOAD 3";
 
 struct SuperrInspect {
@@ -25,19 +29,16 @@ struct SuperrInspect {
     memory_viewer: MemoryViewer,
     optimizer_options: OptimizerOptions,
 }
+
 impl SuperrInspect {
-    fn execute_program(&mut self) {
-        let instructions = self
-            .code_buffer
-            .lines()
-            .into_iter()
-            .filter(|line| !line.is_empty())
-            .map(|line| Instruction::from(line.to_string()))
-            .collect::<Vec<Instruction>>();
+    fn execute_program(&mut self) -> Result<(), Vec<String>> {
+        let program = parser::parse_program(&self.code_buffer).map_err(|e| {
+            e.into_iter()
+                .map(|x| x.to_string())
+                .collect::<Vec<String>>()
+        })?;
 
-        let program = Program { instructions };
-
-        self.vm.execute_program(program);
+        Ok(self.vm.execute_program(program))
     }
 }
 
@@ -80,7 +81,7 @@ impl eframe::App for SuperrInspect {
                     let run_button = ui.button("Run");
 
                     if run_button.clicked() {
-                        self.execute_program();
+                        let _ = self.execute_program(); // TODO: handle errors
                     }
 
                     // Reset VM
