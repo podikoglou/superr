@@ -7,3 +7,4 @@ edition = "2021"
 anyhow = "1.0.102"
 chumsky = "0.10.1"
 superr_isa = { path = "../superr_isa" }
+superr_bytecode = { path = "../superr_bytecode" }

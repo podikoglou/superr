@@ -11,4 +11,4 @@ members = [
     "crates/qua_parser",
     "crates/qua_compiler",
     "crates/superr_assembler"
-]
+, "crates/superr_bytecode"]

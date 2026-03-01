@@ -1,15 +1,15 @@
-use superr_assembler::assembler::{instruction_to_u32, program_to_bytes};
+use superr_bytecode::{instruction_to_u32, program_to_bytes};
 use superr_isa::{Instruction, Program};
 
 #[test]
-fn test_assemble_load() {
+fn test_encode_load() {
     assert_eq!(instruction_to_u32(&Instruction::Load(0)), 0x10000000);
     assert_eq!(instruction_to_u32(&Instruction::Load(4)), 0x10000004);
     assert_eq!(instruction_to_u32(&Instruction::Load(255)), 0x100000FF);
 }
 
 #[test]
-fn test_assemble_swap() {
+fn test_encode_swap() {
     assert_eq!(instruction_to_u32(&Instruction::Swap(0, 0)), 0x20000000);
     assert_eq!(instruction_to_u32(&Instruction::Swap(0, 1)), 0x20000001);
     assert_eq!(instruction_to_u32(&Instruction::Swap(1, 0)), 0x20000100);
@@ -21,7 +21,7 @@ fn test_assemble_swap() {
 }
 
 #[test]
-fn test_assemble_xor() {
+fn test_encode_xor() {
     assert_eq!(instruction_to_u32(&Instruction::XOR(0, 0)), 0x30000000);
     assert_eq!(instruction_to_u32(&Instruction::XOR(0, 1)), 0x30000001);
     assert_eq!(instruction_to_u32(&Instruction::XOR(1, 0)), 0x30000100);
@@ -33,21 +33,21 @@ fn test_assemble_xor() {
 }
 
 #[test]
-fn test_assemble_inc() {
+fn test_encode_inc() {
     assert_eq!(instruction_to_u32(&Instruction::Inc(0)), 0x40000000);
     assert_eq!(instruction_to_u32(&Instruction::Inc(4)), 0x40000004);
     assert_eq!(instruction_to_u32(&Instruction::Inc(255)), 0x400000FF);
 }
 
 #[test]
-fn test_assemble_dec() {
+fn test_encode_dec() {
     assert_eq!(instruction_to_u32(&Instruction::Decr(0)), 0x50000000);
     assert_eq!(instruction_to_u32(&Instruction::Decr(4)), 0x50000004);
     assert_eq!(instruction_to_u32(&Instruction::Decr(255)), 0x500000FF);
 }
 
 #[test]
-fn test_assemble_add() {
+fn test_encode_add() {
     assert_eq!(instruction_to_u32(&Instruction::Add(0, 0)), 0x60000000);
     assert_eq!(instruction_to_u32(&Instruction::Add(0, 1)), 0x60000001);
     assert_eq!(instruction_to_u32(&Instruction::Add(1, 0)), 0x60000100);
@@ -59,7 +59,7 @@ fn test_assemble_add() {
 }
 
 #[test]
-fn test_assemble_sub() {
+fn test_encode_sub() {
     assert_eq!(instruction_to_u32(&Instruction::Sub(0, 0)), 0x70000000);
     assert_eq!(instruction_to_u32(&Instruction::Sub(0, 1)), 0x70000001);
     assert_eq!(instruction_to_u32(&Instruction::Sub(1, 0)), 0x70000100);
@@ -71,14 +71,14 @@ fn test_assemble_sub() {
 }
 
 #[test]
-fn test_assemble_put() {
+fn test_encode_put() {
     assert_eq!(instruction_to_u32(&Instruction::Put(0)), 0x80000000);
     assert_eq!(instruction_to_u32(&Instruction::Put(4)), 0x80000004);
     assert_eq!(instruction_to_u32(&Instruction::Put(255)), 0x800000FF);
 }
 
 #[test]
-fn test_assemble_program() {
+fn test_encode_program() {
     assert_eq!(program_to_bytes(&Program(vec![])), vec![0x00, 0x00,]);
 
     assert_eq!(

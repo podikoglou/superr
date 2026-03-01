@@ -3137,6 +3137,14 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chumsky",
+ "superr_bytecode",
+ "superr_isa",
+]
+
+[[package]]
+name = "superr_bytecode"
+version = "0.1.0"
+dependencies = [
  "superr_isa",
 ]
 
