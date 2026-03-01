@@ -71,7 +71,9 @@ pub fn parse_instruction<'a>() -> impl Parser<'a, &'a str, Instruction, ParserEr
 
 pub fn parser<'a>() -> impl Parser<'a, &'a str, Program, ParserError<'a>> {
     parse_instruction()
-        .separated_by(text::newline())
+        .separated_by(text::newline().repeated().at_least(1))
+        .allow_trailing()
+        .allow_leading()
         .collect::<Vec<_>>()
         .map(Program)
 
