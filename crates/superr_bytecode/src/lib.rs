@@ -16,6 +16,15 @@ pub enum BytecodeDecodingError {
     InvalidOperand,
 }
 
+impl PartialEq for BytecodeDecodingError {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::IOError(_), Self::IOError(_)) => false,
+            _ => core::mem::discriminant(self) == core::mem::discriminant(other),
+        }
+    }
+}
+
 pub fn instruction_to_u32(instruction: &Instruction) -> u32 {
     match instruction {
         Instruction::Load(val) => (0x01 << 28) | (*val as u32),
