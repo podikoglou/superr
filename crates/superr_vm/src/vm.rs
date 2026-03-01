@@ -1,4 +1,4 @@
-use crate::{instruction::Instruction, program::Program};
+use superr_isa::{Instruction, Program};
 
 pub const MEM_SIZE: usize = 12;
 
@@ -23,8 +23,8 @@ impl VM {
     pub fn execute_program(&mut self, program: Program) {
         self.program = program;
 
-        while self.pc < self.program.instructions.len() {
-            match self.program.instructions[self.pc] {
+        while self.pc < self.program.0.len() {
+            match self.program.0[self.pc] {
                 Instruction::Load(val) => {
                     self.state[0] = val;
 
@@ -32,37 +32,37 @@ impl VM {
                 }
 
                 Instruction::Swap(a, b) => {
-                    self.state.swap(a, b);
+                    self.state.swap(a as usize, b as usize);
 
                     self.pc += 1;
                 }
 
                 Instruction::XOR(a, b) => {
-                    self.state[a] ^= self.state[b];
+                    self.state[a as usize] ^= self.state[b as usize];
 
                     self.pc += 1;
                 }
 
                 Instruction::Inc(addr) => {
-                    self.state[addr] += 1;
+                    self.state[addr as usize] += 1;
 
                     self.pc += 1;
                 }
 
                 Instruction::Decr(addr) => {
-                    self.state[addr] -= 1;
+                    self.state[addr as usize] -= 1;
 
                     self.pc += 1;
                 }
 
                 Instruction::Add(a, b) => {
-                    self.state[a] = self.state[a] + self.state[b];
+                    self.state[a as usize] = self.state[a as usize] + self.state[b as usize];
 
                     self.pc += 1;
                 }
 
                 Instruction::Sub(a, b) => {
-                    self.state[a] = self.state[a] - self.state[b];
+                    self.state[a as usize] = self.state[a as usize] - self.state[b as usize];
 
                     self.pc += 1;
                 }
@@ -70,12 +70,10 @@ impl VM {
                 Instruction::Put(addr) => {
                     // TODO: custom writer which may or may not be stdout, so we can handle
                     // optimization without having to constantly print out
-                    println!("{}", self.state[addr]);
+                    println!("{}", self.state[addr as usize]);
 
                     self.pc += 1;
                 }
-
-                Instruction::Jmp(ins) => self.pc = ins,
             }
         }
 
