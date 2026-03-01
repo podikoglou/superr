@@ -3,7 +3,7 @@ use superr_vm::isa::Instruction;
 
 #[derive(Debug)]
 pub struct Compiler {
-    program: Program,
+    pub program: Program,
     pub assembly: Vec<Instruction>,
 }
 
