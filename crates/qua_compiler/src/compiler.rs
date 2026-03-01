@@ -1,5 +1,5 @@
 use qua_ast::ast::program::Program;
-use superr_vm::instruction::Instruction;
+use superr_vm::isa::Instruction;
 
 #[derive(Debug)]
 pub struct Compiler {
