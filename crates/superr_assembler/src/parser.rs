@@ -1,4 +1,4 @@
-use crate::ast::{ASTNode, Instruction};
+use crate::ast::{Instruction, Program};
 use chumsky::{prelude::*, text};
 
 pub type ParserError<'src> = extra::Err<Rich<'src, char>>;
@@ -69,8 +69,12 @@ pub fn parse_instruction<'a>() -> impl Parser<'a, &'a str, Instruction, ParserEr
     ))
 }
 
-pub fn parser<'a>() -> impl Parser<'a, &'a str, Vec<ASTNode>> {
-    todo()
+pub fn parser<'a>() -> impl Parser<'a, &'a str, Program, ParserError<'a>> {
+    parse_instruction()
+        .separated_by(text::newline())
+        .collect::<Vec<_>>()
+        .map(Program)
+
     // let operand = parse_operand();
     //
     // let opcode = text::ident();

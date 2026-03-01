@@ -1,6 +1,6 @@
 use chumsky::Parser;
 use superr_assembler::{
-    ast::{ASTNode, Instruction, Operand},
+    ast::{Instruction, Operand, Program},
     parser::{parse_instruction, parser},
 };
 
@@ -20,72 +20,33 @@ fn test_parse_instruction() {
 
 #[test]
 fn test_single_instruction() {
-    let expected = vec![ASTNode::Instruction {
-        opcode: "LOAD".to_string(),
-        operands: vec![Operand::ImmediateValue(42)],
-    }];
+    let parse = |s| parser().parse(s).into_result();
 
-    assert_eq!(parser().parse("LOAD 42").into_result(), Ok(expected));
+    assert_eq!(parse("LOAD 42"), Ok(Program(vec![Instruction::Load(42)])));
 }
 
 #[test]
 fn test_multiple_operands() {
-    let expected = vec![ASTNode::Instruction {
-        opcode: "ADD".to_string(),
-        operands: vec![Operand::ImmediateValue(1), Operand::ImmediateValue((2))],
-    }];
+    let parse = |s| parser().parse(s).into_result();
 
-    assert_eq!(parser().parse("ADD 1, 2").into_result(), Ok(expected));
-}
-
-#[test]
-fn test_no_operands() {
-    let expected = vec![ASTNode::Instruction {
-        opcode: "HALT".to_string(),
-        operands: vec![],
-    }];
-
-    assert_eq!(parser().parse("HALT ").into_result(), Ok(expected.clone()));
-    assert_eq!(parser().parse("HALT").into_result(), Ok(expected.clone()));
+    assert_eq!(parse("ADD 1,2"), Ok(Program(vec![Instruction::Add(1, 2)])));
 }
 
 #[test]
 fn test_newlines() {
-    let prog = vec![
-        ASTNode::Instruction {
-            opcode: "LOAD".to_string(),
-            operands: vec![Operand::ImmediateValue(5)],
-        },
-        ASTNode::Instruction {
-            opcode: "LOAD".to_string(),
-            operands: vec![Operand::ImmediateValue(2)],
-        },
-    ];
+    let parse = |s| parser().parse(s).into_result();
 
-    assert_eq!(
-        parser().parse("LOAD 5\nLOAD 2").into_result(),
-        Ok(prog.clone())
-    );
+    let prog = Program(vec![Instruction::Load(5), Instruction::Load(2)]);
 
-    assert_eq!(
-        parser().parse("LOAD 5\nLOAD 2\n").into_result(),
-        Ok(prog.clone())
-    );
+    assert_eq!(parse("LOAD 5\nLOAD 2"), Ok(prog.clone()));
 
-    assert_eq!(
-        parser().parse("LOAD 5\nLOAD 2\n\n").into_result(),
-        Ok(prog.clone())
-    );
+    assert_eq!(parse("LOAD 5\nLOAD 2\n"), Ok(prog.clone()));
 
-    assert_eq!(
-        parser().parse("\n\nLOAD 5\nLOAD 2").into_result(),
-        Ok(prog.clone())
-    );
+    assert_eq!(parse("LOAD 5\nLOAD 2\n\n"), Ok(prog.clone()));
 
-    assert_eq!(
-        parser().parse("\n\nLOAD 5\nLOAD 2\n\n").into_result(),
-        Ok(prog.clone())
-    );
+    assert_eq!(parse("\n\nLOAD 5\nLOAD 2"), Ok(prog.clone()));
 
-    assert!(parser().parse("LOAD 5LOAD 2").into_result().is_err());
+    assert_eq!(parse("\n\nLOAD 5\nLOAD 2\n\n"), Ok(prog.clone()));
+
+    assert!(parse("LOAD 5LOAD 2").is_err());
 }

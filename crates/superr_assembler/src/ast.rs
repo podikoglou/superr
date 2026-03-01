@@ -25,13 +25,4 @@ pub enum Instruction {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum ASTNode {
-    Instruction {
-        opcode: String,
-        operands: Vec<Operand>,
-    },
-    Block(Vec<ASTNode>),
-}
-
-#[derive(Debug, PartialEq, Clone)]
 pub struct Program(pub Vec<Instruction>);
