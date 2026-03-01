@@ -49,6 +49,16 @@ fn main() -> anyhow::Result<()> {
                 ),
         )
         .subcommand(
+            command!("as")
+                .aliases(["assemble"])
+                .about("Assembles an assembly program into bytecode")
+                .arg(
+                    arg!([input] "Assembly program")
+                        .default_value("-")
+                        .value_parser(value_parser!(FileOrStdin<String>)),
+                ),
+        )
+        .subcommand(
             command!("gen")
                 .aliases(["g", "generate", "rand", "random"])
                 .about("Generates a random program")
@@ -122,6 +132,7 @@ fn main() -> anyhow::Result<()> {
 
     match matches.subcommand() {
         Some(("run", matches)) => cli::run::execute(matches),
+        Some(("as", matches)) => cli::assemble::execute(matches),
         Some(("gen", matches)) => cli::gen::execute(matches),
         Some(("optimize", matches)) => cli::optimize::execute(matches),
         Some(("bench", matches)) => cli::bench::execute(matches),

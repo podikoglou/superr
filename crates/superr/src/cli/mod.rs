@@ -1,3 +1,4 @@
+pub mod assemble;
 pub mod bench;
 pub mod gen;
 pub mod inspect;
