@@ -1,6 +1,6 @@
 use chumsky::Parser;
 use superr_assembler::{
-    ast::{Instruction, Operand, Program},
+    ast::{Instruction, Program},
     parser::{parse_instruction, parser},
 };
 
@@ -23,6 +23,8 @@ fn test_single_instruction() {
     let parse = |s| parser().parse(s).into_result();
 
     assert_eq!(parse("LOAD 42"), Ok(Program(vec![Instruction::Load(42)])));
+    assert!(parse("LOAD 42, 0").is_err());
+    assert!(parse("LOAD 42 0").is_err());
 }
 
 #[test]
@@ -30,6 +32,13 @@ fn test_multiple_operands() {
     let parse = |s| parser().parse(s).into_result();
 
     assert_eq!(parse("ADD 1,2"), Ok(Program(vec![Instruction::Add(1, 2)])));
+    assert_eq!(parse("ADD 1, 2"), Ok(Program(vec![Instruction::Add(1, 2)])));
+    assert_eq!(
+        parse("ADD 1,  2"),
+        Ok(Program(vec![Instruction::Add(1, 2)]))
+    );
+    assert!(parse("ADD 1 2").is_err());
+    assert!(parse("ADD 1, 2, 3").is_err());
 }
 
 #[test]
