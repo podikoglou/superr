@@ -1,5 +1,5 @@
-use crate::ast::{Instruction, Program};
 use chumsky::{prelude::*, text};
+use superr_isa::{Instruction, Program};
 
 pub type ParserError<'src> = extra::Err<Rich<'src, char>>;
 

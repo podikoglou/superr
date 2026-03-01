@@ -1,8 +1,6 @@
 use chumsky::Parser;
-use superr_assembler::{
-    ast::{Instruction, Program},
-    parser::{parse_instruction, parser},
-};
+use superr_assembler::parser::{parse_instruction, parser};
+use superr_isa::{Instruction, Program};
 
 #[test]
 fn test_parse_instruction() {

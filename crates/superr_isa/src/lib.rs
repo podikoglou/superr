@@ -7,6 +7,10 @@ pub enum Operand {
     ImmediateValue(ImmediateValue),
 }
 
+// This instruction set (along with the assembly format) is heavily based on the one in the below
+// project:
+//
+// https://github.com/AZHenley/superoptimizer
 #[derive(Debug, PartialEq, Clone)]
 pub enum Instruction {
     Load(ImmediateValue),

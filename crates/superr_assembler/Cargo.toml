@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.102"
 chumsky = "0.10.1"
+superr_isa = { path = "../superr_isa" }

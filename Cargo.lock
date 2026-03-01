@@ -3124,6 +3124,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chumsky",
+ "superr_isa",
 ]
 
 [[package]]
@@ -3136,6 +3137,10 @@ dependencies = [
  "superr_optimizers",
  "superr_vm",
 ]
+
+[[package]]
+name = "superr_isa"
+version = "0.1.0"
 
 [[package]]
 name = "superr_optimizers"

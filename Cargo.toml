@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+    "crates/superr_isa",
     "crates/superr_vm",
     "crates/superr_optimizers",
     "crates/superr",
@@ -9,5 +10,5 @@ members = [
     "crates/qua_ast",
     "crates/qua_parser",
     "crates/qua_compiler",
-    "crates/superr_assembler",
+    "crates/superr_assembler"
 ]
