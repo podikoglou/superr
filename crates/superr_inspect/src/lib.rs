@@ -7,10 +7,7 @@ use egui_code_editor::{CodeEditor, ColorTheme};
 use memory_viewer::MemoryViewer;
 use optimizer_options::OptimizerOptions;
 use superr_assembler::parser;
-use superr_vm::{
-    isa::{Instruction, Program},
-    vm::VM,
-};
+use superr_vm::vm::VM;
 
 static DEFAULT_PROGRAM: &str = "LOAD 3
 SWAP 0, 1
