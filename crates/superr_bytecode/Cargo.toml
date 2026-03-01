@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 superr_isa = { path = "../superr_isa" }
+thiserror = "2.0.18"

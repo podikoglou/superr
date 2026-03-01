@@ -1,4 +1,14 @@
 use superr_isa::{Instruction, Program};
+use thiserror::Error;
+
+#[derive(Error, Debug, PartialEq)]
+pub enum BytecodeDecodingError {
+    #[error("invalid opcode: {0}")]
+    InvalidOpcode(u8),
+
+    #[error("invalid operand")]
+    InvalidOperand,
+}
 
 pub fn instruction_to_u32(instruction: &Instruction) -> u32 {
     match instruction {
@@ -10,6 +20,26 @@ pub fn instruction_to_u32(instruction: &Instruction) -> u32 {
         Instruction::Add(a, b) => (0x06 << 28) | ((*a as u32) << 8) | (*b as u32),
         Instruction::Sub(a, b) => (0x07 << 28) | ((*a as u32) << 8) | (*b as u32),
         Instruction::Put(addr) => (0x08 << 28) | (*addr as u32),
+    }
+}
+
+pub fn u32_to_instruction(input: u32) -> Result<Instruction, BytecodeDecodingError> {
+    let opcode = (input & 0xF0000000) >> 28;
+
+    // TODO: error handling
+    let first_op = || ((input & 0x0000FF00) >> 8).try_into().unwrap();
+    let second_op = || (input & 0x000000FF).try_into().unwrap();
+
+    match opcode {
+        0x01 => Ok(Instruction::Load(second_op())),
+        0x02 => Ok(Instruction::Swap(first_op(), second_op())),
+        0x03 => Ok(Instruction::XOR(first_op(), second_op())),
+        0x04 => Ok(Instruction::Inc(second_op())),
+        0x05 => Ok(Instruction::Decr(second_op())),
+        0x06 => Ok(Instruction::Add(first_op(), second_op())),
+        0x07 => Ok(Instruction::Sub(first_op(), second_op())),
+        0x08 => Ok(Instruction::Put(second_op())),
+        _ => Err(BytecodeDecodingError::InvalidOpcode(opcode as u8)),
     }
 }
 
