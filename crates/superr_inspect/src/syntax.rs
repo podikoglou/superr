@@ -9,7 +9,7 @@ pub fn superr() -> Syntax {
         comment_multiline: ["/*", "*/"],
         hyperlinks: BTreeSet::from(["http"]),
         keywords: BTreeSet::from([
-            "LOAD", "SWAP", "XOR", "INC", "DECR", "ADD", "SUB", "PUT", "JMP",
+            "LOAD", "SWAP", "XOR", "INC", "DEC", "ADD", "SUB", "PUT", "JMP",
         ]),
         types: BTreeSet::from([]),
         special: BTreeSet::from([]),

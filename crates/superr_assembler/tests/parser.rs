@@ -10,7 +10,7 @@ fn test_parse_instruction() {
     assert_eq!(parse("SWAP 4, 2"), Ok(Instruction::Swap(4, 2)));
     assert_eq!(parse("XOR 0, 255"), Ok(Instruction::XOR(0, 255)));
     assert_eq!(parse("INC 27"), Ok(Instruction::Inc(27)));
-    assert_eq!(parse("DECR 27"), Ok(Instruction::Decr(27)));
+    assert_eq!(parse("DEC 27"), Ok(Instruction::Dec(27)));
     assert_eq!(parse("ADD 255, 255"), Ok(Instruction::Add(255, 255)));
     assert_eq!(parse("SUB 0, 0"), Ok(Instruction::Sub(0, 0)));
     assert_eq!(parse("PUT 0"), Ok(Instruction::Put(0)));

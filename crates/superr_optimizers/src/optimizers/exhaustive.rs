@@ -12,7 +12,7 @@ use superr_vm::{
 
 use super::{Optimizer, OptimizerArgs};
 
-const INSTRUCTIONS: [&'static str; 7] = ["LOAD", "SWAP", "XOR", "INC", "DECR", "ADD", "SUB"];
+const INSTRUCTIONS: [&'static str; 7] = ["LOAD", "SWAP", "XOR", "INC", "DEC", "ADD", "SUB"];
 
 pub struct ExhaustiveOptimizer {
     pub args: OptimizerArgs,
@@ -120,7 +120,7 @@ impl ExhaustiveOptimizer {
                 .map(|(a, b)| [a, b])
                 .collect(),
 
-            "INC" | "DECR" => (0..MEM_SIZE as u8).map(|val| [val, 0]).collect(),
+            "INC" | "DEC" => (0..MEM_SIZE as u8).map(|val| [val, 0]).collect(),
 
             _ => panic!("Unknown instruction: {}", instruction),
         }
@@ -135,7 +135,7 @@ impl ExhaustiveOptimizer {
             "XOR" => Instruction::XOR(args[0], args[1]),
 
             "INC" => Instruction::Inc(args[0]),
-            "DECR" => Instruction::Decr(args[0]),
+            "DEC" => Instruction::Dec(args[0]),
 
             "ADD" => Instruction::Add(args[0], args[1]),
             "SUB" => Instruction::Sub(args[0], args[1]),

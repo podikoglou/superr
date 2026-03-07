@@ -35,7 +35,7 @@ pub fn generate_instruction(max_num: MemValue) -> Instruction {
 
             match instruction {
                 3 => Instruction::Inc(addr),
-                4 => Instruction::Decr(addr),
+                4 => Instruction::Dec(addr),
 
                 _ => panic!("SUPER unexpected error occurred"),
             }

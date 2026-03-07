@@ -41,9 +41,9 @@ fn test_encode_inc() {
 
 #[test]
 fn test_encode_dec() {
-    assert_eq!(instruction_to_u32(&Instruction::Decr(0)), 0x50000000);
-    assert_eq!(instruction_to_u32(&Instruction::Decr(4)), 0x50000004);
-    assert_eq!(instruction_to_u32(&Instruction::Decr(255)), 0x500000FF);
+    assert_eq!(instruction_to_u32(&Instruction::Dec(0)), 0x50000000);
+    assert_eq!(instruction_to_u32(&Instruction::Dec(4)), 0x50000004);
+    assert_eq!(instruction_to_u32(&Instruction::Dec(255)), 0x500000FF);
 }
 
 #[test]

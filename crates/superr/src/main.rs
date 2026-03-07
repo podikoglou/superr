@@ -5,7 +5,7 @@ use clap::{arg, command, value_parser, ArgAction};
 use clap_stdin::FileOrStdin;
 
 const INSTRUCTIONS: [&str; 8] = [
-    "load", "swap", "xor", "inc", "decr", "add", "sub", "put", /* "jump" */
+    "load", "swap", "xor", "inc", "dec", "add", "sub", "put", /* "jump" */
 ];
 
 const OPTIMIZERS: [&str; 3] = ["random", "exhaustive", "diffing"];

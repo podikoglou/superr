@@ -55,9 +55,9 @@ fn test_decode_inc() {
 
 #[test]
 fn test_decode_dec() {
-    assert_eq!(u32_to_instruction(0x50000000), Ok(Instruction::Decr(0)));
-    assert_eq!(u32_to_instruction(0x50000004), Ok(Instruction::Decr(4)));
-    assert_eq!(u32_to_instruction(0x500000FF), Ok(Instruction::Decr(255)));
+    assert_eq!(u32_to_instruction(0x50000000), Ok(Instruction::Dec(0)));
+    assert_eq!(u32_to_instruction(0x50000004), Ok(Instruction::Dec(4)));
+    assert_eq!(u32_to_instruction(0x500000FF), Ok(Instruction::Dec(255)));
 }
 
 #[test]

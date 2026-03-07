@@ -49,7 +49,7 @@ impl VM {
                     self.pc += 1;
                 }
 
-                Instruction::Decr(addr) => {
+                Instruction::Dec(addr) => {
                     self.state[addr as usize] -= 1;
 
                     self.pc += 1;

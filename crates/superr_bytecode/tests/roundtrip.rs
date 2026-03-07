@@ -12,7 +12,7 @@ fn test_roundtrip_encode_decode() {
     for value in 0u8..=u8::MAX {
         assert_roundtrip(Instruction::Load(value));
         assert_roundtrip(Instruction::Inc(value));
-        assert_roundtrip(Instruction::Decr(value));
+        assert_roundtrip(Instruction::Dec(value));
         assert_roundtrip(Instruction::Put(value));
     }
 

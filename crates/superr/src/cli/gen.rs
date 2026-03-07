@@ -35,7 +35,7 @@ pub fn execute(matches: &ArgMatches) -> anyhow::Result<()> {
             "swap" => Instruction::Swap(addr1, addr2),
             "xor" => Instruction::XOR(addr1, addr2),
             "inc" => Instruction::Inc(addr1),
-            "decr" => Instruction::Decr(addr1),
+            "dec" => Instruction::Dec(addr1),
             "add" => Instruction::Add(addr1, addr2),
             "sub" => Instruction::Sub(addr1, addr2),
             "put" => Instruction::Put(addr1),

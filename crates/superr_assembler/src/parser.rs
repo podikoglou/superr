@@ -46,10 +46,10 @@ pub fn instruction_parser<'a>() -> impl Parser<'a, &'a str, Instruction, ParserE
             .ignore_then(text::whitespace())
             .ignore_then(address_operand_parser())
             .map(Instruction::Inc),
-        text::keyword("DECR") // like this for backwards compatibility. TODO: DEC
+        text::keyword("DEC")
             .ignore_then(text::whitespace())
             .ignore_then(address_operand_parser())
-            .map(Instruction::Decr),
+            .map(Instruction::Dec),
         text::keyword("ADD")
             .ignore_then(text::whitespace())
             .ignore_then(address_operand_parser())

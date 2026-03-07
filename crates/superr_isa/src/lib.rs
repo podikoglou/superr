@@ -22,7 +22,7 @@ pub enum Instruction {
     Inc(Address),
 
     /// Decrements the value at a given memory address
-    Decr(Address),
+    Dec(Address),
 
     /// Adds the values at two memory addresses and places the result on the first
     Add(Address, Address),
@@ -44,7 +44,7 @@ impl Display for Instruction {
             Instruction::XOR(a, b) => write!(f, "XOR {}, {}", a, b),
 
             Instruction::Inc(a) => write!(f, "INC {}", a),
-            Instruction::Decr(a) => write!(f, "DECR {}", a),
+            Instruction::Dec(a) => write!(f, "DEC {}", a),
 
             Instruction::Add(a, b) => write!(f, "ADD {}, {}", a, b),
             Instruction::Sub(a, b) => write!(f, "SUB {}, {}", a, b),
